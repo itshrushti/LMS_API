@@ -1,6 +1,7 @@
 ﻿using LMS_Project_APIs.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Protocol.Plugins;
 
@@ -20,8 +21,20 @@ namespace LMS_Project_APIs.Controllers
         [HttpGet("GetStudents")]
         public async Task<IActionResult> GetStudents()
         {
+<<<<<<< HEAD
             var students = await _context.DisplayStudents.FromSqlRaw("EXEC display_Student").ToListAsync();
             return Ok(students);
+=======
+            try
+            {
+                var students = await _context.DisplayStudent.FromSqlRaw("EXEC display_Student").ToListAsync();
+                return Ok(students);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error : ", Error = ex.Message });
+            }
+>>>>>>> 7d9cb62866f0ffd6130bd54396e8938dfeb5c62e
         }
 
 
@@ -59,8 +72,12 @@ namespace LMS_Project_APIs.Controllers
         }
 
 
+<<<<<<< HEAD
         [HttpDelete]
         [Route("DeleteStudents")]
+=======
+        [HttpDelete("DeleteStudents")]
+>>>>>>> 7d9cb62866f0ffd6130bd54396e8938dfeb5c62e
         public async Task<IActionResult> DeleteStudents(List<int> studentIds)
         {
             if(studentIds == null || studentIds.Count == 0)
@@ -83,20 +100,34 @@ namespace LMS_Project_APIs.Controllers
         [HttpGet("searchStudent")]
         public async Task<IActionResult> SearchStudent(string searchValue)
         {
+<<<<<<< HEAD
             if (string.IsNullOrEmpty(searchValue))
+=======
+            if(string.IsNullOrEmpty(searchValue))
+>>>>>>> 7d9cb62866f0ffd6130bd54396e8938dfeb5c62e
             {
                 return BadRequest(new { Message = "Search Value is required." });
             }
             try
             {
+<<<<<<< HEAD
                 var stud = await _context.DisplayStudents.FromSqlRaw("EXEC search_Student @p0", searchValue).ToListAsync();
                 return Ok(stud);
             }
             catch (Exception ex)
+=======
+                var stud = await _context.DisplayStudent.FromSqlRaw("EXEC search_Student @p0", searchValue).ToListAsync();
+                return Ok(stud);
+            }
+            catch(Exception ex)
+>>>>>>> 7d9cb62866f0ffd6130bd54396e8938dfeb5c62e
             {
                 return StatusCode(500, new { Message = "An error : ", Error = ex.Message });
             }
         }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 7d9cb62866f0ffd6130bd54396e8938dfeb5c62e
     }
 }
