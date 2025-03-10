@@ -47,5 +47,40 @@ namespace LMS_Project_APIs.Controllers
                 return StatusCode(500, new { Message = "An error : ", Error = ex.Message });
             }
         }
+
+        [HttpDelete("DeleteRole")]
+        public async Task<IActionResult> DeleteRole(int roleid)
+        {
+           
+            try
+            {
+             
+                await _context.Database.ExecuteSqlRawAsync("EXEC delete_Role @p0", roleid);
+                return Ok(new { Message = "Students deleted successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "an error : ", Error = ex.Message });
+            }
+        }
+
+        [HttpGet("searchRole")]
+        public async Task<IActionResult> SearchStudent(string searchValue)
+        {
+            if (string.IsNullOrEmpty(searchValue))
+            {
+                return BadRequest(new { Message = "Search Value is required." });
+            }
+            try
+            {
+                var stud = await _context.Role.FromSqlRaw("EXEC search_Role @p0", searchValue).ToListAsync();
+                return Ok(stud);
+            }
+
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error : ", Error = ex.Message });
+            }
+        }
     }
 }

@@ -20,6 +20,8 @@ public partial class LearningManagementSystemContext : DbContext
     public virtual DbSet<Role> Role { get; set; }
     public virtual DbSet<AddStudent> AddStudents { get; set; }
     public virtual DbSet<DisplayStudent> DisplayStudents { get; set; }
+    public virtual DbSet<AssignTrainings> AssignTrainings { get; set; }
+    public virtual DbSet<EditStudentProfile> EditStudentProfiles { get; set; }
 
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -31,6 +33,8 @@ public partial class LearningManagementSystemContext : DbContext
         modelBuilder.Entity<Role>().HasNoKey().ToView(null);
         modelBuilder.Entity<DisplayStudent>().HasNoKey().ToView(null);
         modelBuilder.Entity<AddStudent>().HasNoKey().ToView(null);
+        modelBuilder.Entity<AssignTrainings>().HasNoKey().ToView(null);
+        modelBuilder.Entity<EditStudentProfile>().HasNoKey().ToView(null);
 
 
         OnModelCreatingPartial(modelBuilder);
