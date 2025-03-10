@@ -1,4 +1,5 @@
-﻿using LMS_Project_APIs.Models;
+﻿using Azure.Core;
+using LMS_Project_APIs.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
@@ -92,6 +93,26 @@ namespace LMS_Project_APIs.Controllers
 
                 return Ok(enrolldata);
 
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+                return StatusCode(500, "An error occurred while fetching the course catalog.");
+            }
+
+        }
+
+        [HttpGet("DisplayPending")]
+        public async Task<IActionResult> DisplayPendingApproval()
+        {
+            try
+            { 
+
+                var approvaldata = await _context.PendingApprovals
+                    .FromSqlRaw("EXEC display_pending_Approval")
+                    .ToListAsync();
+
+                return Ok(approvaldata);
             }
             catch (Exception ex)
             {

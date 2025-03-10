@@ -23,6 +23,9 @@ public partial class LearningManagementSystemContext : DbContext
     public virtual DbSet<IDPSearching> IDPSearchings { get; set; }
     public virtual DbSet<TrainingTrascriptData> TrainingTrascriptDatas { get; set; }
     public virtual DbSet<TranscriptSearching> TranscriptSearchings { get; set; } 
+    public virtual DbSet<TrainingStartModel> TrainingStartModels { get; set; } 
+    public virtual DbSet<tbl_Training> Tbl_Training { get; set; } 
+    public virtual DbSet<PendingApproval> PendingApprovals { get; set; } 
 
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -39,7 +42,11 @@ public partial class LearningManagementSystemContext : DbContext
         modelBuilder.Entity<IDPSearching>().HasNoKey().ToView(null);
         modelBuilder.Entity<TrainingTrascriptData>().HasNoKey().ToView(null);
         modelBuilder.Entity<TranscriptSearching>().HasNoKey().ToView(null); 
+        modelBuilder.Entity<TrainingStartModel>().HasNoKey().ToView(null);
+        modelBuilder.Entity<PendingApproval>().HasNoKey().ToView(null);
 
+        modelBuilder.Entity<tbl_Training>()
+       .HasKey(t => t.training_id);
 
         OnModelCreatingPartial(modelBuilder);
     }
