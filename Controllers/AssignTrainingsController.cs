@@ -12,26 +12,33 @@ namespace LMS_Project_APIs.Controllers
     public class AssignTrainingsController : ControllerBase
     {
         private readonly LearningManagementSystemContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public AssignTrainingsController(LearningManagementSystemContext context)
+
+
+        public AssignTrainingsController(LearningManagementSystemContext context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
+            _httpContextAccessor = httpContextAccessor;
         }
 
 
         [HttpPost("AssignTrainings")]
+        [AdminAuthorize]
         public async Task<IActionResult> AssignTrainings(AssignTrainings tblassign)
         {
-            if (tblassign == null || tblassign.StudentId <= 0)
+            var studentId = _httpContextAccessor.HttpContext.Session.GetInt32("StudentId");
+
+            if (tblassign == null)
             {
                 return BadRequest("Invalid student ID or training IDs.");
             }
-
             try
             {
                 await _context.Database.ExecuteSqlRawAsync(
                     "EXEC AssignTrainings @p0, @p1",
-                    tblassign.StudentId,
+                    //tblassign.StudentId,
+                    studentId,
                     tblassign.TrainingIds ?? (object)DBNull.Value
                 );
                 return Ok("Trainings assigned successfully.");

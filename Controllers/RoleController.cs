@@ -17,11 +17,12 @@ namespace LMS_Project_APIs.Controllers
         }
 
         [HttpGet("GetRoles")]
+        [AdminAuthorize]
         public async Task<IActionResult> GetRoles()
         {
             try
             {
-                var roles = await _context.Role.FromSqlRaw("EXEC display_Role").ToListAsync();
+                var roles = await _context.Roles.FromSqlRaw("EXEC display_Role").ToListAsync();
                 return Ok(roles);
             }
             catch (Exception ex)
@@ -31,6 +32,7 @@ namespace LMS_Project_APIs.Controllers
         }
 
         [HttpPost("AddEditRole")]
+        [AdminAuthorize]
         public async Task<IActionResult> AddEditRole(Role role)
         {
             try
@@ -49,6 +51,7 @@ namespace LMS_Project_APIs.Controllers
         }
 
         [HttpDelete("DeleteRole")]
+        [AdminAuthorize]
         public async Task<IActionResult> DeleteRole(int roleid)
         {
            
@@ -65,6 +68,7 @@ namespace LMS_Project_APIs.Controllers
         }
 
         [HttpGet("searchRole")]
+        [AdminAuthorize]
         public async Task<IActionResult> SearchStudent(string searchValue)
         {
             if (string.IsNullOrEmpty(searchValue))
@@ -73,7 +77,7 @@ namespace LMS_Project_APIs.Controllers
             }
             try
             {
-                var stud = await _context.Role.FromSqlRaw("EXEC search_Role @p0", searchValue).ToListAsync();
+                var stud = await _context.Roles.FromSqlRaw("EXEC search_Role @p0", searchValue).ToListAsync();
                 return Ok(stud);
             }
 

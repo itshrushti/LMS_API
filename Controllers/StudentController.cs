@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Protocol.Plugins;
+using System.Data;
 
 namespace LMS_Project_APIs.Controllers
 {
@@ -12,13 +13,16 @@ namespace LMS_Project_APIs.Controllers
     public class StudentController : ControllerBase
     {
         private readonly LearningManagementSystemContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public StudentController(LearningManagementSystemContext context)
+        public StudentController(LearningManagementSystemContext context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         [HttpGet("GetStudents")]
+        [AdminAuthorize]
         public async Task<IActionResult> GetStudents()
         {
             try
@@ -33,12 +37,14 @@ namespace LMS_Project_APIs.Controllers
         }
 
 
-        [HttpPost("AddStudent")]
-        public async Task<IActionResult> AddStudent(AddStudent tbstud)
+        [HttpPost("AddEditStudent")]
+        public async Task<IActionResult> AddEditStudent(AddStudent tbstud)
         {
             try
             {
-                await _context.Database.ExecuteSqlRawAsync("EXEC add_edit_Student @p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12,@p13, @p14, @p15, @p16",
+                var studentIdParam = new SqlParameter("@NewStudentId", SqlDbType.Int) { Direction = ParameterDirection.Output };
+
+                await _context.Database.ExecuteSqlRawAsync("EXEC add_edit_Student @p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12,@p13, @p14, @p15, @p16,@NewStudentId OUTPUT",
 
                     tbstud.Student_Id == 0 ? null : tbstud.Student_Id,
                     tbstud.Student_No,
@@ -56,10 +62,17 @@ namespace LMS_Project_APIs.Controllers
                     tbstud.City,
                     tbstud.Postal_Code,
                     tbstud.State,
-                    tbstud.Country
+                    tbstud.Country,
+                   studentIdParam
+
                   );
-                return Ok(new { Message = "Student Added/Updated." });
+
+                int studentId = (int)studentIdParam.Value;
+
+                _httpContextAccessor.HttpContext.Session.SetInt32("StudentId", studentId);
+                return Ok(new { Message = "Student Added/Updated.", StudentId = studentId });
             }
+            
             catch (Exception ex)
             {
                 return StatusCode(500, new { Message = "An error : ", Error = ex.Message });
@@ -69,6 +82,7 @@ namespace LMS_Project_APIs.Controllers
 
      
         [HttpDelete("DeleteStudents")]
+        [AdminAuthorize]
         public async Task<IActionResult> DeleteStudents(List<int> studentIds)
         {
             if(studentIds == null || studentIds.Count == 0)
@@ -90,6 +104,7 @@ namespace LMS_Project_APIs.Controllers
 
 
         [HttpGet("searchStudent")]
+        [AdminAuthorize]
         public async Task<IActionResult> SearchStudent(string searchValue)
         {
             if(string.IsNullOrEmpty(searchValue))
