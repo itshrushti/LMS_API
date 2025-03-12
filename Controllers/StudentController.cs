@@ -36,6 +36,27 @@ namespace LMS_Project_APIs.Controllers
             }
         }
 
+        [HttpGet("GetStudentDetails")]
+        public ActionResult GetStudentDetails()
+        {
+            var studentId = _httpContextAccessor.HttpContext.Session.GetInt32("StudentId");
+
+            if (studentId == null)
+            {
+                return BadRequest(new { Message = "Student ID not found in session." });
+            }
+
+            var student = _context.AddStudents.FromSqlRaw("EXEC GetStudentDetails @p0", studentId)
+                .AsEnumerable()
+                .FirstOrDefault();
+
+            if (student == null)
+            {
+                return NotFound(new { Message = "Student not found." });
+            }
+
+            return Ok(student);
+        }
 
         [HttpPost("AddEditStudent")]
         public async Task<IActionResult> AddEditStudent(AddStudent tbstud)

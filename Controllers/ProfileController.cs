@@ -20,17 +20,94 @@ namespace LMS_Project_APIs.Controllers
             _httpContextAccessor = httpContextAccessor;
         }
 
+        [HttpGet("GetStudentProfile")]
+public ActionResult GetStudentProfile()
+{
+    var studentId = _httpContextAccessor.HttpContext.Session.GetInt32("StudentId");
+
+    if (studentId == null)
+    {
+        return BadRequest(new { Message = "Student ID not found in session." });
+    }
+
+            var student =  _context.EditStudentProfiles.FromSqlRaw("EXEC getEditProfile @p0",studentId)
+                .AsEnumerable()
+                .FirstOrDefault();
+        
+    if (student == null)
+    {
+        return NotFound(new { Message = "Student not found." });
+    }
+
+    return Ok(student);
+}
+
         [HttpPost("EditStudentProfile")]
-        public async Task<IActionResult> EditStudentProfile(EditStudentProfile stud)
+        public async Task<IActionResult> EditStudentProfile([FromForm] EditStudentProfile stud)
         {
             var studentId = _httpContextAccessor.HttpContext.Session.GetInt32("StudentId");
+
+            var studentExists = await _context.TblStudents
+      .FromSqlRaw("SELECT COUNT(*) as StudentCount FROM tbl_Student WHERE Student_Id = @p0", studentId)
+      .Select(s => s.Student_Id)
+      .CountAsync();
+
+            if (studentExists == 0)
+            {
+                return BadRequest(new { Message = "Student not found in tbl_Student." });
+            }
+
+
+            string filename = null;
+            string defaultImage = "profile_image.jpg";
+
+            var existingProfileImage = await _context.TblStudents
+     .FromSqlRaw("SELECT Profile_Image FROM tbl_Student WHERE Student_Id = @p0", studentId)
+     .Select(s => s.Profile_Image)
+     .FirstOrDefaultAsync();
+
+            if (string.IsNullOrEmpty(existingProfileImage))
+            {
+                existingProfileImage = defaultImage; 
+            }
+
+
+            if (stud.Profile_Image != null && stud.Profile_Image.Length > 0)
+            {
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/ProfileImages");
+
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+
+                if (!string.IsNullOrEmpty(existingProfileImage) && existingProfileImage != defaultImage)
+                {
+                    string oldFilePath = Path.Combine(uploadsFolder, existingProfileImage);
+                    if (System.IO.File.Exists(oldFilePath))
+                    {
+                        System.IO.File.Delete(oldFilePath);
+                    }
+                }
+
+                filename = Path.GetFileName(stud.Profile_Image.FileName);
+                string filePath = Path.Combine(uploadsFolder, filename);
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await stud.Profile_Image.CopyToAsync(stream);
+                }
+            }
+            else
+            {
+                filename = existingProfileImage;
+            }
             try
             {
                 await _context.Database.ExecuteSqlRawAsync("EXEC edit_studentProfile @p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8",
 
                     studentId,
                     stud.Email,
-                    stud.Profile_Image,
+                    filename,
                     stud.Phone_No,
                     stud.Address,
                     stud.City,
@@ -46,6 +123,7 @@ namespace LMS_Project_APIs.Controllers
             }
         }
 
+
         [HttpPost("SetCompanyLogo")]
         [AdminAuthorize]
         public async Task<IActionResult> SetCompanyLogo(IFormFile file)
@@ -55,31 +133,68 @@ namespace LMS_Project_APIs.Controllers
                 return BadRequest(new { message = "Image file is required." });
             }
 
+            var allowedExtensions = new List<string> { ".jpg", ".jpeg", ".png" };
             var fileExtension = Path.GetExtension(file.FileName).ToLower();
-            if (!AllowedExtensions.Contains(fileExtension))
+
+            if (!allowedExtensions.Contains(fileExtension))
             {
                 return BadRequest(new { message = "Only JPG, JPEG, and PNG formats are allowed." });
             }
 
             try
             {
-                // Convert image to Base64 string
-                using var memoryStream = new MemoryStream();
-                await file.CopyToAsync(memoryStream);
-                string base64String = Convert.ToBase64String(memoryStream.ToArray());
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/CompanyLogo");
+
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder); 
+                }
+
+                var existingLogo = await _context.Logo
+            .FromSqlRaw("SELECT company_image FROM tbl_CompanyLogo")
+            .Select(s => s.company_image)
+            .FirstOrDefaultAsync();
+
+                if (!string.IsNullOrEmpty(existingLogo))
+                {
+                    string oldFilePath = Path.Combine(uploadsFolder, existingLogo);
+                    if (System.IO.File.Exists(oldFilePath))
+                    {
+                        System.IO.File.Delete(oldFilePath);
+                    }
+                }
+
+                string filename = Path.GetFileName(file.FileName);
+                string filePath = Path.Combine(uploadsFolder, filename);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
 
                 await _context.Database.ExecuteSqlRawAsync(
                     "EXEC setCompanyLogo @p0",
-                    new SqlParameter("@p0", base64String)
+                    new SqlParameter("@p0", filename) 
                 );
 
-                return Ok(new { message = "Company logo updated successfully." });
+                return Ok(new { message = "Company logo updated successfully."});
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "An error occurred.", error = ex.Message });
             }
         }
+
+        [HttpGet("DisplayCompanyLogo")]
+       
+        public ActionResult DisplayCompanyLogo()
+        {
+            var logo = _context.Logo.FromSqlRaw("EXEC display_CompanyLogo")
+                .AsEnumerable()
+                .FirstOrDefault();
+            return Ok(logo);
+        }
+
     }
 }
 

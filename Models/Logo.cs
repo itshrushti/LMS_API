@@ -2,6 +2,6 @@
 {
     public class Logo
     {
-        public string? companyimage { get; set; }
+        public string? company_image { get; set; }
     }
 }

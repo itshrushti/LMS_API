@@ -15,9 +15,8 @@ public partial class LearningManagementSystemContext : DbContext
     {
     }
 
-  
-
     public virtual DbSet<Role> Roles { get; set; }
+    public virtual DbSet<TblStudent> TblStudents { get; set; }
     public virtual DbSet<AddStudent> AddStudents { get; set; }
     public virtual DbSet<DisplayStudent> DisplayStudents { get; set; }
     public virtual DbSet<AssignTrainings> AssignTrainings { get; set; }
@@ -34,6 +33,7 @@ public partial class LearningManagementSystemContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Role>().HasNoKey().ToView(null);
+        modelBuilder.Entity<TblStudent>().HasNoKey().ToView(null);
         modelBuilder.Entity<DisplayStudent>().HasNoKey().ToView(null);
         modelBuilder.Entity<AddStudent>().HasNoKey().ToView(null);
         modelBuilder.Entity<AssignTrainings>().HasNoKey().ToView(null);

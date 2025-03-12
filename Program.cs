@@ -51,6 +51,8 @@ app.UseCors("AllowAll");
 
 app.UseRouting();
 
+app.UseStaticFiles();
+
 app.UseSession();
 
 app.UseAuthentication();
