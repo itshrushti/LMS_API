@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Protocol.Plugins;
+using System.Data;
 
 namespace LMS_Project_APIs.Controllers
 {
@@ -12,18 +13,21 @@ namespace LMS_Project_APIs.Controllers
     public class StudentController : ControllerBase
     {
         private readonly LearningManagementSystemContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public StudentController(LearningManagementSystemContext context)
+        public StudentController(LearningManagementSystemContext context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         [HttpGet("GetStudents")]
+        [AdminAuthorize]
         public async Task<IActionResult> GetStudents()
         {
             try
             {
-                var students = await _context.DisplayStudent.FromSqlRaw("EXEC display_Student").ToListAsync();
+                var students = await _context.DisplayStudents.FromSqlRaw("EXEC display_Student").ToListAsync();
                 return Ok(students);
             }
             catch(Exception ex)
@@ -32,13 +36,36 @@ namespace LMS_Project_APIs.Controllers
             }
         }
 
+        [HttpGet("GetStudentDetails")]
+        public ActionResult GetStudentDetails()
+        {
+            var studentId = _httpContextAccessor.HttpContext.Session.GetInt32("StudentId");
 
-        [HttpPost("AddStudent")]
-        public async Task<IActionResult> AddStudent(AddStudent tbstud)
+            if (studentId == null)
+            {
+                return BadRequest(new { Message = "Student ID not found in session." });
+            }
+
+            var student = _context.AddStudents.FromSqlRaw("EXEC GetStudentDetails @p0", studentId)
+                .AsEnumerable()
+                .FirstOrDefault();
+
+            if (student == null)
+            {
+                return NotFound(new { Message = "Student not found." });
+            }
+
+            return Ok(student);
+        }
+
+        [HttpPost("AddEditStudent")]
+        public async Task<IActionResult> AddEditStudent(AddStudent tbstud)
         {
             try
             {
-                await _context.Database.ExecuteSqlRawAsync("EXEC add_edit_Student @p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12,@p13, @p14, @p15, @p16",
+                var studentIdParam = new SqlParameter("@NewStudentId", SqlDbType.Int) { Direction = ParameterDirection.Output };
+
+                await _context.Database.ExecuteSqlRawAsync("EXEC add_edit_Student @p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12,@p13, @p14, @p15, @p16,@NewStudentId OUTPUT",
 
                     tbstud.Student_Id == 0 ? null : tbstud.Student_Id,
                     tbstud.Student_No,
@@ -56,10 +83,17 @@ namespace LMS_Project_APIs.Controllers
                     tbstud.City,
                     tbstud.Postal_Code,
                     tbstud.State,
-                    tbstud.Country
+                    tbstud.Country,
+                   studentIdParam
+
                   );
-                return Ok(new { Message = "Student Added/Updated." });
+
+                int studentId = (int)studentIdParam.Value;
+
+                _httpContextAccessor.HttpContext.Session.SetInt32("StudentId", studentId);
+                return Ok(new { Message = "Student Added/Updated.", StudentId = studentId });
             }
+            
             catch (Exception ex)
             {
                 return StatusCode(500, new { Message = "An error : ", Error = ex.Message });
@@ -67,7 +101,9 @@ namespace LMS_Project_APIs.Controllers
         }
 
 
+     
         [HttpDelete("DeleteStudents")]
+        [AdminAuthorize]
         public async Task<IActionResult> DeleteStudents(List<int> studentIds)
         {
             if(studentIds == null || studentIds.Count == 0)
@@ -87,7 +123,9 @@ namespace LMS_Project_APIs.Controllers
             }
         }
 
+
         [HttpGet("searchStudent")]
+        [AdminAuthorize]
         public async Task<IActionResult> SearchStudent(string searchValue)
         {
             if(string.IsNullOrEmpty(searchValue))
@@ -96,13 +134,15 @@ namespace LMS_Project_APIs.Controllers
             }
             try
             {
-                var stud = await _context.DisplayStudent.FromSqlRaw("EXEC search_Student @p0", searchValue).ToListAsync();
+                var stud = await _context.DisplayStudents.FromSqlRaw("EXEC search_Student @p0", searchValue).ToListAsync();
                 return Ok(stud);
             }
+          
             catch(Exception ex)
             {
                 return StatusCode(500, new { Message = "An error : ", Error = ex.Message });
             }
         }
+
     }
 }
