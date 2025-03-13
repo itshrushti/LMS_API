@@ -20,6 +20,7 @@ namespace LMS_Project_APIs.Controllers
     {
         private readonly LearningManagementSystemContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public TrainingController(LearningManagementSystemContext context, IWebHostEnvironment webHostEnvironment)
         {
@@ -38,7 +39,9 @@ namespace LMS_Project_APIs.Controllers
             return Ok(trainings);
         }
 
+
         [HttpPost("addTraining")]
+        [AdminAuthorize]
         public async Task<IActionResult> AddTraining(TblTraining training)
         {
             string docPath = null;
@@ -121,6 +124,7 @@ namespace LMS_Project_APIs.Controllers
 
 
         [HttpPut("updateTraining")]
+        [AdminAuthorize]
         public async Task<IActionResult> UpdateTraining(TblTraining training)
         {
             var trainingId = training.TrainingId;
@@ -244,6 +248,7 @@ namespace LMS_Project_APIs.Controllers
 
 
         [HttpDelete("deleteTraining")]
+        [AdminAuthorize]
         public async Task<IActionResult> DeleteTraining([FromBody] List<int> trainingIds)
         {
             try
@@ -288,6 +293,7 @@ namespace LMS_Project_APIs.Controllers
 
 
         [HttpGet("searchTraining")]
+        [AdminAuthorize]
         public async Task<ActionResult> searchTraining(string searchValue)
         {
             if (string.IsNullOrWhiteSpace(searchValue))
