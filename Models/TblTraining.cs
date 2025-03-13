@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LMS_Project_APIs.Models;
 
 public partial class TblTraining
 {
+    [Key]
     public int TrainingId { get; set; }
 
     public string? TrainingName { get; set; }
@@ -13,9 +16,10 @@ public partial class TblTraining
 
     public int? TrainingtypeId { get; set; }
 
-    public string? trainingtype_name { get; set; }
+    //public string? trainingtype_name { get; set; }
 
-    public string? DocumentFile { get; set; }
+    [NotMapped]
+    public IFormFile? DocumentFile { get; set; }
 
     public string? ExternalLinkUrl { get; set; }
 
@@ -23,17 +27,18 @@ public partial class TblTraining
 
     public bool? RequiresApproval { get; set; }
 
-    public DateOnly? ArchiveDate { get; set; }
+    public DateOnly? ArchiveDate { get; set; } 
 
     public string? Summary { get; set; }
 
     public bool? CourseCatalog { get; set; }
 
-    public DateOnly? CstartDate { get; set; }
+    public DateOnly? CstartDate { get; set; } 
 
     public DateOnly? CendDate { get; set; }
 
-    public string? ThumbnailImage { get; set; }
+    [NotMapped]
+    public IFormFile? ThumbnailImage { get; set; }
 
     //public DateTime? CreateDate { get; set; }
 
