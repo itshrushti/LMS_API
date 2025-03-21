@@ -27,7 +27,7 @@ namespace LMS_Project_APIs.Controllers
             if (loginRequest == null || string.IsNullOrEmpty(loginRequest.logintext) || string.IsNullOrEmpty(loginRequest.password))
                 return BadRequest(new { message = "Enter username/email & password." });
 
-            var student =  _context.DisplayStudents
+            var student = _context.DisplayStudents
                 .FromSqlRaw("EXEC student_Login @p0, @p1",
                     new SqlParameter("@p0", loginRequest.logintext),
                     new SqlParameter("@p1", loginRequest.password))
@@ -38,7 +38,7 @@ namespace LMS_Project_APIs.Controllers
                 return Unauthorized(new { message = "Invalid username or password." });
 
             if (student.Archive_Date.HasValue && student.Archive_Date.Value < DateOnly.FromDateTime(DateTime.Now))
-                return Unauthorized(new { message = "Your Account is archived." });
+                return Unauthorized(new { message = "Your Account is archived.", archive_date = student.Archive_Date });
 
             var httpContext = _httpContextAccessor.HttpContext;
             HttpContext.Session.SetInt32("StudentId", student.Student_Id);
@@ -46,7 +46,15 @@ namespace LMS_Project_APIs.Controllers
             HttpContext.Session.SetString("lastname", student.Lastname);
             HttpContext.Session.SetString("UserRole", student.Role_name);
 
-            return Ok(new { Message = "Login Successful", Role = student.Role_name, StudentId = student.Student_Id});
+            return Ok(new
+            {
+                Message = "Login Successful",
+                Role = student.Role_name,
+                StudentId = student.Student_Id,
+                firstname = student.Firstname,
+                lastname = student.Lastname,
+                archivedate = student.Archive_Date
+            });
         }
 
         [HttpPost("ResetPassword")]
