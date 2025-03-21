@@ -38,7 +38,7 @@ namespace LMS_Project_APIs.Controllers
                 return Unauthorized(new { message = "Invalid username or password." });
 
             if (student.Archive_Date.HasValue && student.Archive_Date.Value < DateOnly.FromDateTime(DateTime.Now))
-                return Unauthorized(new { message = "Your Account is archived." });
+                return Unauthorized(new { message = "Your Account is archived." , archive_date = student.Archive_Date });
 
             var httpContext = _httpContextAccessor.HttpContext;
             HttpContext.Session.SetInt32("StudentId", student.Student_Id);
@@ -46,7 +46,14 @@ namespace LMS_Project_APIs.Controllers
             HttpContext.Session.SetString("lastname", student.Lastname);
             HttpContext.Session.SetString("UserRole", student.Role_name);
 
-            return Ok(new { Message = "Login Successful", Role = student.Role_name, StudentId = student.Student_Id});
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
+
+            return Ok(new { Message = "Login Successful", Role = student.Role_name,
+                StudentId = student.Student_Id,
+                firstname=student.Firstname, 
+                lastname= student.Lastname,
+                archivedate = student.Archive_Date
+            });
         }
 
         [HttpPost("ResetPassword")]
