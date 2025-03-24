@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+using Mono.TextTemplating;
+using System.Diagnostics.Metrics;
+using System.Net;
 
 namespace LMS_Project_APIs.Controllers
 {
@@ -21,7 +25,8 @@ namespace LMS_Project_APIs.Controllers
         }
 
         [HttpGet("GetStudentProfile")]
-        public ActionResult GetStudentProfile([FromQuery] int studentId)
+
+        public ActionResult GetStudentProfile([FromQuery] int studentId) 
         {
             if (studentId <= 0)
             {
@@ -43,8 +48,10 @@ namespace LMS_Project_APIs.Controllers
             return Ok(new
             {
                 studentId = student.Student_Id,
+                firstname = student.firstname,
+                lastname = student.lastname,
                 Email = student.Email,
-                ProfileImage = $"{baseUrl}/ProfileImages/{student.Profile_Image_Name}",
+                ProfileImage = $"{baseUrl}/ProfileImages/{student.Profile_Image_Name}", 
                 Phoneno = student.Phone_No,
                 address = student.Address,
                 city = student.City,
@@ -53,6 +60,7 @@ namespace LMS_Project_APIs.Controllers
                 country = student.Country
             });
         }
+
 
         [HttpPost("EditStudentProfile")]
         public async Task<IActionResult> EditStudentProfile([FromForm] EditStudentProfile stud)
