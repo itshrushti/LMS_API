@@ -38,13 +38,16 @@ namespace LMS_Project_APIs.Controllers
                 return Unauthorized(new { message = "Invalid username or password." });
 
             if (student.Archive_Date.HasValue && student.Archive_Date.Value < DateOnly.FromDateTime(DateTime.Now))
-                return Unauthorized(new { message = "Your Account is archived.", archive_date = student.Archive_Date });
+
+                return Unauthorized(new { message = "Your Account is archived." , archive_date = student.Archive_Date });
+
 
             var httpContext = _httpContextAccessor.HttpContext;
             HttpContext.Session.SetInt32("StudentId", student.Student_Id);
             HttpContext.Session.SetString("firstname", student.Firstname);
             HttpContext.Session.SetString("lastname", student.Lastname);
             HttpContext.Session.SetString("UserRole", student.Role_name);
+
 
             return Ok(new
             {

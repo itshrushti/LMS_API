@@ -17,6 +17,7 @@ namespace LMS_Project_APIs.Controllers
         }
 
         [HttpPost("AssignStudents")]
+        [AdminAuthorize]
         public async Task<IActionResult> AssignTrainings(TblAssignStudents tblassign)
         {
             if (tblassign == null || tblassign.TrainingId <= 0)

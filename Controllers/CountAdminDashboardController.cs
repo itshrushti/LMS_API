@@ -17,6 +17,7 @@ namespace LMS_Project_APIs.Controllers
         }
 
         [HttpGet("getCountAdminDashboard/{studentId}")]
+        [AdminAuthorize]
         public IActionResult getCountAdminDashboard(int studentId)
         {
             if (studentId == 0)
