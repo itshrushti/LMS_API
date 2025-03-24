@@ -22,7 +22,7 @@ namespace LMS_Project_APIs.Controllers
         }
 
         [HttpGet("GetStudents")]
-        [AdminAuthorize]
+        //[AdminAuthorize]
         public async Task<IActionResult> GetStudents()
         {
             try
