@@ -46,7 +46,7 @@ namespace LMS_Project_APIs.Controllers
             HttpContext.Session.SetString("lastname", student.Lastname);
             HttpContext.Session.SetString("UserRole", student.Role_name);
 
-            var baseUrl = $"{Request.Scheme}://{Request.Host}";
+            //var baseUrl = $"{Request.Scheme}://{Request.Host}";
 
             return Ok(new { Message = "Login Successful", Role = student.Role_name,
                 StudentId = student.Student_Id,
