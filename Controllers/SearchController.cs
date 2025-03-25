@@ -18,14 +18,15 @@ namespace LMS_Project_APIs.Controllers
         }
 
         [HttpGet("SearchIDP")]
-        public async Task<IActionResult> SearchIDP(string searchValue)
+        public async Task<IActionResult> SearchIDP(string searchValue,int studentID)
         {
             try
             {
                 var searchParam = new SqlParameter("@searchvalue", searchValue ?? (object)DBNull.Value);
+                var studentid = new SqlParameter("@studentId", studentID);
 
                 var searchResults = await _context.IDPSearchings
-                    .FromSqlRaw("EXEC Search_IDP @searchvalue", searchParam)
+                    .FromSqlRaw("EXEC Search_IDP @searchvalue,@studentId", searchParam, studentid)
                     .ToListAsync();
 
                 return Ok(searchResults);

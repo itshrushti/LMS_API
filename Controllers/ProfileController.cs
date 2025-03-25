@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+using Mono.TextTemplating;
+using System.Diagnostics.Metrics;
+using System.Net;
 
 namespace LMS_Project_APIs.Controllers
 {
@@ -21,26 +25,42 @@ namespace LMS_Project_APIs.Controllers
         }
 
         [HttpGet("GetStudentProfile")]
-public ActionResult GetStudentProfile()
-{
-    var studentId = _httpContextAccessor.HttpContext.Session.GetInt32("StudentId");
 
-    if (studentId == null)
-    {
-        return BadRequest(new { Message = "Student ID not found in session." });
-    }
+        public ActionResult GetStudentProfile([FromQuery] int studentId) 
+        {
+            if (studentId <= 0)
+            {
+                return BadRequest(new { Message = "Invalid Student ID." });
+            }
 
-            var student =  _context.EditStudentProfiles.FromSqlRaw("EXEC getEditProfile @p0",studentId)
+            var student = _context.EditStudentProfiles
+                .FromSqlRaw("EXEC getEditProfile @p0", studentId)
                 .AsEnumerable()
                 .FirstOrDefault();
-        
-    if (student == null)
-    {
-        return NotFound(new { Message = "Student not found." });
-    }
 
-    return Ok(student);
-}
+            if (student == null)
+            {
+                return NotFound(new { Message = "Student not found." });
+            }
+
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
+
+            return Ok(new
+            {
+                studentId = student.Student_Id,
+                firstname = student.firstname,
+                lastname = student.lastname,
+                Email = student.Email,
+                ProfileImage = $"{baseUrl}/ProfileImages/{student.Profile_Image_Name}", 
+                Phoneno = student.Phone_No,
+                address = student.Address,
+                city = student.City,
+                postalcode = student.Postal_Code,
+                state = student.State,
+                country = student.Country
+            });
+        }
+
 
         [HttpPost("EditStudentProfile")]
         public async Task<IActionResult> EditStudentProfile([FromForm] EditStudentProfile stud)
