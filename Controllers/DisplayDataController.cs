@@ -157,5 +157,21 @@ namespace LMS_Project_APIs.Controllers
         }
 
 
+        [HttpGet("GetTranscriptByID/{transcriptid}")]
+        public async Task<IActionResult> GetTranscriptID(int transcriptid)
+        {
+
+            var transcriptIdparam = new SqlParameter("@transcriptid", transcriptid);
+
+            var transcriptdata = await _context.TrainingTrascriptDatas
+                .FromSqlRaw("EXEC sp_GetTranscriptByID @transcriptid", transcriptIdparam)
+                .ToListAsync();
+
+            return Ok(transcriptdata);
+
+
+        }
+
+
     }
 }
