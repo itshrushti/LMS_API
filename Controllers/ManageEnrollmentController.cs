@@ -17,45 +17,75 @@ namespace LMS_Project_APIs.Controllers
             _context = context;
         }
 
-        [HttpPost("StartTraining")]
-        public async Task<IActionResult> StartTraining([FromBody] TrainingStartModel request)
+        [HttpPost("StartTrainingDirect")]
+        public async Task<IActionResult> StartTrainingDirect([FromBody] TrainingStartModel request)
         {
-
             if (request == null || request.StudentId == null || request.TrainingId == null)
             {
                 return BadRequest("Invalid data provided.");
             }
 
-            var approvalRequired = await _context.Tbl_Training
-                  .Where(t => t.training_id == request.TrainingId)
-                  .Select(t => t.requires_approval)
-                  .FirstOrDefaultAsync();
-
-
-            var studentparam = new SqlParameter("@studentid", request.StudentId ?? (object)DBNull.Value);
-            var trainingparam = new SqlParameter("@trainingid", request.TrainingId ?? (object)DBNull.Value);
-            var actionParam = new SqlParameter("@action", "TRAINING");
-
-            var studentIdParam = new SqlParameter("@studentid", studentparam);
-            var trainingIdParam = new SqlParameter("@trainingid", trainingparam);
-
-            if (approvalRequired == true)
+            try
             {
-                // Call the training_Approval stored procedure for approval-required trainings
-                await _context.Database.ExecuteSqlRawAsync("EXEC training_Approval @student_id = {0}, @training_id = {1}, @action = {2}", request.StudentId, request.TrainingId, "TRAINING");
-                return Ok("Training request submitted. Waiting for approval.");
+                // Check if training requires approval
+                var approvalRequired = await _context.Tbl_Training
+                    .Where(t => t.training_id == request.TrainingId)
+                    .Select(t => t.requires_approval)
+                    .FirstOrDefaultAsync();
+
+                if (approvalRequired == false)
+                {
+                    await _context.Database.ExecuteSqlRawAsync("EXEC start_Training @studentid = {0}, @trainingid = {1}",
+                        request.StudentId, request.TrainingId);
+
+                    return Ok("Training started successfully.");
+                }
+                else
+                {
+                    return BadRequest("This training requires approval before starting.");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                // Directly start training without approval
-                await _context.Database.ExecuteSqlRawAsync("EXEC start_Training @studentid = {0}, @trainingid = {1}", request.StudentId, request.TrainingId);
-                return Ok("Training started successfully.");
-
+                return StatusCode(500, "Error starting training: " + ex.Message);
             }
-
-    
-
         }
+
+        [HttpPost("RequestTrainingApproval")]
+        public async Task<IActionResult> RequestTrainingApproval([FromBody] TrainingStartModel request)
+        {
+            if (request == null || request.StudentId == null || request.TrainingId == null)
+            {
+                return BadRequest("Invalid data provided.");
+            }
+
+            try
+            {
+                // Check if training requires approval
+                var approvalRequired = await _context.Tbl_Training
+                    .Where(t => t.training_id == request.TrainingId)
+                    .Select(t => t.requires_approval)
+                    .FirstOrDefaultAsync();
+
+                if (approvalRequired == true)
+                {
+                    await _context.Database.ExecuteSqlRawAsync("EXEC training_Approval @student_id = {0}, @training_id = {1}, @action = {2}",
+                        request.StudentId, request.TrainingId, "TRAINING");
+
+                    return Ok("Training request submitted. Waiting for approval.");
+                }
+                else
+                {
+                    return BadRequest("This training does not require approval.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Error processing approval request: " + ex.Message);
+            }
+        }
+
+
 
         [HttpPost("Approval")]
         public async Task<IActionResult> Approval([FromBody] TrainingStartModel request)

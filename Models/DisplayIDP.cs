@@ -9,6 +9,7 @@
         public string? training_code { get; set; }
         public string? summary { get; set; }
         public string? trainingtype_name { get; set; } 
+        public bool? requires_approval { get; set; }
         public string? status { get; set; }
     }
 }
