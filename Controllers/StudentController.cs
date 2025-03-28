@@ -125,7 +125,7 @@ namespace LMS_Project_APIs.Controllers
 
 
         [HttpGet("searchStudent")]
-        [AdminAuthorize]
+        //[AdminAuthorize]
         public async Task<IActionResult> SearchStudent(string searchValue)
         {
             if(string.IsNullOrEmpty(searchValue))

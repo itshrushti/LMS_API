@@ -2,6 +2,7 @@
 {
     public class SearchTraining
     {
+        public int training_id { get; set; }
         public string? training_name { get; set; }
 
         public string? training_code { get; set; }

@@ -22,14 +22,15 @@ namespace LMS_Project_APIs.Controllers
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public TrainingController(LearningManagementSystemContext context, IWebHostEnvironment webHostEnvironment)
+        public TrainingController(LearningManagementSystemContext context, IWebHostEnvironment webHostEnvironment, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
-          
+            _httpContextAccessor = httpContextAccessor;
         }
 
         [HttpGet("getTraining")]
+        //[AdminAuthorize]
         public IActionResult getTraining()
         {
             var trainings = _context.SearchTrainings
@@ -44,6 +45,7 @@ namespace LMS_Project_APIs.Controllers
         [AdminAuthorize]
         public async Task<IActionResult> AddTraining(TblTraining training)
         {
+
             string docPath = null;
             string imagePath = null;
             if (training.ThumbnailImage != null && training.ThumbnailImage.Length > 0)
@@ -98,7 +100,22 @@ namespace LMS_Project_APIs.Controllers
             }
             try
             {
-                await _context.Database.ExecuteSqlRawAsync("EXEC add_edit_training @p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13",
+                //var trainingId = training.TrainingId;
+                //// Check if Training ID already exists
+                //var existTraining = await _context.TblTraining
+                //                                .FromSqlRaw("SELECT training_id FROM tbl_training WHERE training_id = @p0", trainingId)
+                //                                .Select(x => x.TrainingId)
+                //                                .FirstOrDefaultAsync();
+
+                //// Check if existTraining is NOT null and greater than zero
+                //if (existTraining != null && existTraining > 0)
+                //{
+                //    return BadRequest(new { Message = "Training ID already exists. Cannot create a new entry with an existing ID." });
+                //}
+
+                var trainingidParam = new SqlParameter("@Newtrainingid", SqlDbType.Int) { Direction = ParameterDirection.Output };
+
+                await _context.Database.ExecuteSqlRawAsync("EXEC add_edit_training @p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @Newtrainingid Output",
                     null, // Since it's a new training, TrainingId is null
                     training.TrainingName,
                     training.TrainingCode,
@@ -112,7 +129,19 @@ namespace LMS_Project_APIs.Controllers
                     training.CourseCatalog,
                     training.CstartDate,
                     training.CendDate,
-                    imagePath);
+                    imagePath,
+                    trainingidParam);
+
+                int trainingid = (int)trainingidParam.Value;
+
+                _httpContextAccessor.HttpContext.Session.SetInt32("TrainingId", trainingid);
+
+                var trainingId = training.TrainingId;
+                if (trainingId != null)
+                {
+                    return BadRequest(new { Message = "Training ID already exists. Update instead of creating a new one." });
+
+                }
 
                 return Ok(new { Message = "Training Added Successfully", ImagePath = imagePath, DocumentPath = docPath });
             }
@@ -220,6 +249,7 @@ namespace LMS_Project_APIs.Controllers
             }
             try
             {
+
                 await _context.Database.ExecuteSqlRawAsync("EXEC add_edit_training @p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13",
                     training.TrainingId,
                     training.TrainingName,
@@ -293,7 +323,7 @@ namespace LMS_Project_APIs.Controllers
 
 
         [HttpGet("searchTraining")]
-        [AdminAuthorize]
+        //[AdminAuthorize]
         public async Task<ActionResult> searchTraining(string searchValue)
         {
             if (string.IsNullOrWhiteSpace(searchValue))
