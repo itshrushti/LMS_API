@@ -17,7 +17,6 @@ namespace LMS_Project_APIs.Controllers
         }
 
         [HttpGet("getConfiguration")]
-        [AdminAuthorize]
         public async Task<IActionResult> getConfiguration()
         {
             var result = await _context.DisplayConfigurations
@@ -27,7 +26,6 @@ namespace LMS_Project_APIs.Controllers
         }
 
         [HttpPost("updateConfiguration")]
-        [AdminAuthorize]
         public async Task<ActionResult> updateConfiguration([FromBody] TblConfiguration tblConfig)
         {
             try

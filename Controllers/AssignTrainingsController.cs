@@ -15,7 +15,6 @@ namespace LMS_Project_APIs.Controllers
         private readonly IHttpContextAccessor _httpContextAccessor;
 
 
-
         public AssignTrainingsController(LearningManagementSystemContext context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
@@ -26,7 +25,8 @@ namespace LMS_Project_APIs.Controllers
         [HttpPost("AssignTrainings")]
         public async Task<IActionResult> AssignTrainings([FromBody] AssignTrainings tblassign)
         {
-            if (tblassign == null || tblassign.StudentId == 0 )
+            if (tblassign == null || tblassign.StudentId == 0)
+
             {
                 return BadRequest("Invalid student ID or training IDs.");
             }
@@ -48,4 +48,3 @@ namespace LMS_Project_APIs.Controllers
 
     }
 }
-

@@ -22,7 +22,6 @@ namespace LMS_Project_APIs.Controllers
         }
 
         [HttpGet("GetStudents")]
-        //[AdminAuthorize]
         public async Task<IActionResult> GetStudents()
         {
             try
@@ -35,24 +34,17 @@ namespace LMS_Project_APIs.Controllers
                 return StatusCode(500, new { Message = "An error : ", Error = ex.Message });
             }
         }
-
-        [HttpGet("GetStudentDetails")]
-        public ActionResult GetStudentDetails()
+        [HttpGet("GetStudentDetails/{studentId}")]
+        public ActionResult GetStudentDetails(int studentId)
         {
-            var studentId = _httpContextAccessor.HttpContext.Session.GetInt32("StudentId");
-
-            if (studentId == null)
-            {
-                return BadRequest(new { Message = "Student ID not found in session." });
-            }
-
+         
             var student = _context.AddStudents.FromSqlRaw("EXEC GetStudentDetails @p0", studentId)
                 .AsEnumerable()
                 .FirstOrDefault();
 
             if (student == null)
             {
-                return NotFound(new { Message = "Student not found." });
+                return NotFound(new { Message = "Student not found" });
             }
 
             return Ok(student);
@@ -103,7 +95,6 @@ namespace LMS_Project_APIs.Controllers
 
      
         [HttpDelete("DeleteStudents")]
-        [AdminAuthorize]
         public async Task<IActionResult> DeleteStudents(List<int> studentIds)
         {
             if(studentIds == null || studentIds.Count == 0)
@@ -125,7 +116,7 @@ namespace LMS_Project_APIs.Controllers
 
 
         [HttpGet("searchStudent")]
-        //[AdminAuthorize]
+
         public async Task<IActionResult> SearchStudent(string searchValue)
         {
             if(string.IsNullOrEmpty(searchValue))

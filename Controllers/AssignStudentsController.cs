@@ -20,7 +20,7 @@ namespace LMS_Project_APIs.Controllers
         }
 
         [HttpPost("AssignStudents")]
-        //[AdminAuthorize]
+       
         public async Task<IActionResult> AssignStudents(TblAssignStudents tblassign)
         {
             //var TrainingId = _httpcontextAccessor.HttpContext.Session.GetInt32("TrainingId");

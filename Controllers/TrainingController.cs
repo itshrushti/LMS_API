@@ -42,7 +42,6 @@ namespace LMS_Project_APIs.Controllers
 
 
         [HttpPost("addTraining")]
-        //[AdminAuthorize]
         public async Task<IActionResult> AddTraining(TblTraining training)
         {
 
@@ -155,7 +154,7 @@ namespace LMS_Project_APIs.Controllers
 
 
         [HttpPut("updateTraining")]
-        //[AdminAuthorize]
+
         public async Task<IActionResult> UpdateTraining(TblTraining training)
         {
             var trainingId = training.TrainingId;
@@ -280,7 +279,6 @@ namespace LMS_Project_APIs.Controllers
 
 
         [HttpDelete("deleteTraining")]
-        [AdminAuthorize]
         public async Task<IActionResult> DeleteTraining([FromBody] List<int> trainingIds)
         {
             try
@@ -325,7 +323,6 @@ namespace LMS_Project_APIs.Controllers
 
 
         [HttpGet("searchTraining")]
-        //[AdminAuthorize]
         public async Task<ActionResult> searchTraining(string searchValue)
         {
             if (string.IsNullOrWhiteSpace(searchValue))
