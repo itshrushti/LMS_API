@@ -44,7 +44,7 @@ namespace LMS_Project_APIs.Controllers
 
             if (student == null)
             {
-                return NotFound(new { Message = "Student not found." });
+                return NotFound(new { Message = "Student not found" });
             }
 
             return Ok(student);
