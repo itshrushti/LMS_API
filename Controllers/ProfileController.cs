@@ -145,7 +145,6 @@ namespace LMS_Project_APIs.Controllers
 
 
         [HttpPost("SetCompanyLogo")]
-        [AdminAuthorize]
         public async Task<IActionResult> SetCompanyLogo(IFormFile file)
         {
             if (file == null || file.Length == 0)

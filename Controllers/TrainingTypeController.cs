@@ -27,7 +27,6 @@ namespace LMS_Project_APIs.Controllers
         }
 
         [HttpPost("addTrainingType")]
-        [AdminAuthorize]
         public async Task<ActionResult> addTrainingType([FromBody] TblTrainingType tblTrainingType)
         {
             try
@@ -45,7 +44,6 @@ namespace LMS_Project_APIs.Controllers
         }
 
         [HttpPut("updateTrainingType")]
-        [AdminAuthorize]
         public async Task<ActionResult> updateTrainingType([FromBody] TblTrainingType tblTrainingType)
         {
             try
@@ -64,7 +62,6 @@ namespace LMS_Project_APIs.Controllers
         }
 
         [HttpDelete("deleteTrainingType/{trainingtypeid}")]
-        [AdminAuthorize]
         public async Task<ActionResult> deleteTrainingType(int trainingtypeid)
         {
             if (trainingtypeid == 0)
@@ -85,7 +82,6 @@ namespace LMS_Project_APIs.Controllers
         }
 
         [HttpGet("searchTrainingType")]
-        [AdminAuthorize]
         public async Task<ActionResult> searchTrainingType(string searchValue)
         {
             if (string.IsNullOrEmpty(searchValue))

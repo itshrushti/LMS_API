@@ -17,7 +17,6 @@
         public string Password { get; set; }
 
         public string? Email { get; set; }
-        public string? profile_Image { get;set; }
 
         public string? Role_name { get; set; }
 
