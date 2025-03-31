@@ -32,7 +32,7 @@ namespace LMS_Project_APIs.Controllers
         [HttpGet("getTraining")]
         public IActionResult getTraining()
         {
-            var trainings = _context.SearchTrainings
+            var trainings = _context.DisplayTraining
                             .FromSqlRaw("EXEC display_Training")
                             .AsEnumerable()
                             .ToList();
