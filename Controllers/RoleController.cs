@@ -17,6 +17,7 @@ namespace LMS_Project_APIs.Controllers
         }
 
         [HttpGet("GetRoles")]
+
         public async Task<IActionResult> GetRoles()
         {
             try

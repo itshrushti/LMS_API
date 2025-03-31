@@ -61,8 +61,7 @@ namespace LMS_Project_APIs.Controllers
         [HttpGet("DisplayTrainingTrascript/{studentId}")]
         public async Task<IActionResult> GetTrainingTrascript(int studentId)
         {
-            try
-            {
+             
                 var studentIdParam = new SqlParameter("@studentid", studentId);
 
                 var transcriptdata = await _context.TrainingTrascriptDatas
@@ -70,13 +69,7 @@ namespace LMS_Project_APIs.Controllers
                     .ToListAsync();
 
                 return Ok(transcriptdata);
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error: {ex.Message}");
-                return StatusCode(500, "An error occurred while fetching the course catalog.");
-            }
+ 
 
         }
 
@@ -161,6 +154,32 @@ namespace LMS_Project_APIs.Controllers
                 Console.WriteLine($"Error: {ex.Message}");
                 return StatusCode(500, "An error occurred while fetching the data.");
             }
+        }
+
+
+        [HttpGet("GetTranscriptByID/{transcriptid}")]
+        public async Task<IActionResult> GetTranscriptID(int transcriptid)
+        {
+
+            var transcriptIdparam = new SqlParameter("@transcriptid", transcriptid);
+
+            var transcriptdata = await _context.TrainingTrascriptDatas
+                .FromSqlRaw("EXEC sp_GetTranscriptByID @transcriptid", transcriptIdparam)
+                .ToListAsync();
+
+            return Ok(transcriptdata);
+
+
+        }
+
+
+        [HttpGet("GetTrainingDataByID/{trainingid}")]
+        public async Task<IActionResult> GetTrainingByID(int trainingid)
+        {
+            var trainingidParam = new SqlParameter("@trainingid", trainingid);
+            var trainingdata = await _context.TrainingDataByIDs.FromSqlRaw("EXEC GetTrainingByID @trainingid", trainingidParam).ToListAsync();
+
+            return Ok(trainingdata);
         }
 
 

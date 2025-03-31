@@ -26,6 +26,7 @@ namespace LMS_Project_APIs.Controllers
         public async Task<IActionResult> AssignTrainings([FromBody] AssignTrainings tblassign)
         {
             if (tblassign == null || tblassign.StudentId == 0)
+
             {
                 return BadRequest("Invalid student ID or training IDs.");
             }
