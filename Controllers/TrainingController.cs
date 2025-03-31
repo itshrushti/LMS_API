@@ -42,7 +42,7 @@ namespace LMS_Project_APIs.Controllers
 
 
         [HttpPost("addTraining")]
-        [AdminAuthorize]
+        //[AdminAuthorize]
         public async Task<IActionResult> AddTraining(TblTraining training)
         {
 
@@ -119,7 +119,7 @@ namespace LMS_Project_APIs.Controllers
                     null, // Since it's a new training, TrainingId is null
                     training.TrainingName,
                     training.TrainingCode,
-                    training.TrainingtypeId,
+                    training.Trainingtype_Id,
                     docPath,
                     training.ExternalLinkUrl,
                     training.TrainingHours,
@@ -132,18 +132,20 @@ namespace LMS_Project_APIs.Controllers
                     imagePath,
                     trainingidParam);
 
-                int trainingid = (int)trainingidParam.Value;
+                //int TrainingId = (int)trainingidParam.Value;
+                int TrainingId = trainingidParam.Value != DBNull.Value ? (int)trainingidParam.Value : 0;
 
-                _httpContextAccessor.HttpContext.Session.SetInt32("TrainingId", trainingid);
 
-                var trainingId = training.TrainingId;
-                if (trainingId != null)
-                {
-                    return BadRequest(new { Message = "Training ID already exists. Update instead of creating a new one." });
+                _httpContextAccessor.HttpContext.Session.SetInt32("TrainingId", TrainingId);
 
-                }
+                //var trainingId = training.TrainingId;
+                //if (trainingId != null)
+                //{
+                //    return BadRequest(new { Message = "Training ID already exists. Update instead of creating a new one." });
 
-                return Ok(new { Message = "Training Added Successfully", ImagePath = imagePath, DocumentPath = docPath });
+                //}
+
+                return Ok(new { Message = "Training Added Successfully", TrainingId = TrainingId, ImagePath = imagePath, DocumentPath = docPath });
             }
             catch (Exception ex)
             {
@@ -153,7 +155,7 @@ namespace LMS_Project_APIs.Controllers
 
 
         [HttpPut("updateTraining")]
-        [AdminAuthorize]
+        //[AdminAuthorize]
         public async Task<IActionResult> UpdateTraining(TblTraining training)
         {
             var trainingId = training.TrainingId;
@@ -254,7 +256,7 @@ namespace LMS_Project_APIs.Controllers
                     training.TrainingId,
                     training.TrainingName,
                     training.TrainingCode,
-                    training.TrainingtypeId,
+                    training.Trainingtype_Id,
                     docPath,
                     training.ExternalLinkUrl,
                     training.TrainingHours,

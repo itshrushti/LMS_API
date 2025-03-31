@@ -1,6 +1,7 @@
 ﻿using LMS_Project_APIs.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace LMS_Project_APIs.Controllers
@@ -19,10 +20,10 @@ namespace LMS_Project_APIs.Controllers
         }
 
         [HttpPost("AssignStudents")]
-        [AdminAuthorize]
-        public async Task<IActionResult> AssignTrainings(TblAssignStudents tblassign)
+        //[AdminAuthorize]
+        public async Task<IActionResult> AssignStudents(TblAssignStudents tblassign)
         {
-            var trainingid = _httpcontextAccessor.HttpContext.Session.GetInt32("TrainingId");
+            //var TrainingId = _httpcontextAccessor.HttpContext.Session.GetInt32("TrainingId");
 
             if (tblassign == null)
             {
@@ -33,9 +34,11 @@ namespace LMS_Project_APIs.Controllers
             {
                 await _context.Database.ExecuteSqlRawAsync(
                     "EXEC AssignStudents @p0, @p1",
-                    //tblassign.TrainingId,
-                    trainingid,
-                    tblassign.StudentIds ?? (object)DBNull.Value
+                     new SqlParameter("@p0", tblassign.TrainingId),
+                    new SqlParameter("@p1", string.Join(",", tblassign.StudentIds))
+                //tblassign.TrainingId,
+                //trainingid,
+                //tblassign.StudentIds ?? (object)DBNull.Value
                 );
                 return Ok("Training Assigned to Student successfully.");
             }
