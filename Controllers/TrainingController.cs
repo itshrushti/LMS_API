@@ -323,7 +323,7 @@ namespace LMS_Project_APIs.Controllers
 
 
         [HttpGet("searchTraining")]
-        [AdminAuthorize]
+        //[AdminAuthorize]
         public async Task<ActionResult> searchTraining(string searchValue)
         {
             if (string.IsNullOrWhiteSpace(searchValue))

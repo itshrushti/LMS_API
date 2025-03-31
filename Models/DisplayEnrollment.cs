@@ -2,6 +2,7 @@
 {
     public class DisplayEnrollment
     {
+        public int training_id { get; set; }
         public string? thumbnail_image { get; set; }
         public string? training_name { get; set; }
         public DateTime? enroll_date { get; set; } 

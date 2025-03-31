@@ -24,30 +24,28 @@ namespace LMS_Project_APIs.Controllers
 
 
         [HttpPost("AssignTrainings")]
-        [AdminAuthorize]
-        public async Task<IActionResult> AssignTrainings(AssignTrainings tblassign)
+        public async Task<IActionResult> AssignTrainings([FromBody] AssignTrainings tblassign)
         {
-            var studentId = _httpContextAccessor.HttpContext.Session.GetInt32("StudentId");
-
-            if (tblassign == null)
+            if (tblassign == null || tblassign.StudentId == 0 )
             {
                 return BadRequest("Invalid student ID or training IDs.");
             }
+
             try
             {
                 await _context.Database.ExecuteSqlRawAsync(
                     "EXEC AssignTrainings @p0, @p1",
-                    //tblassign.StudentId,
-                    studentId,
-                    tblassign.TrainingIds ?? (object)DBNull.Value
+                    new SqlParameter("@p0", tblassign.StudentId),
+                    new SqlParameter("@p1", string.Join(",", tblassign.TrainingIds))
                 );
-                return Ok("Trainings assigned successfully.");
+                return Ok(new { Message = "Trainings assigned successfully." });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { Message = "An error occurred", Error = ex.Message });
             }
         }
+
     }
 }
 

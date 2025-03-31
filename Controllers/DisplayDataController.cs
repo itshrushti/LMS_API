@@ -173,5 +173,15 @@ namespace LMS_Project_APIs.Controllers
         }
 
 
+        [HttpGet("GetTrainingDataByID/{trainingid}")]
+        public async Task<IActionResult> GetTrainingByID(int trainingid)
+        {
+            var trainingidParam = new SqlParameter("@trainingid", trainingid);
+            var trainingdata = await _context.TrainingDataByIDs.FromSqlRaw("EXEC GetTrainingByID @trainingid", trainingidParam).ToListAsync();
+
+            return Ok(trainingdata);
+        }
+
+
     }
 }
