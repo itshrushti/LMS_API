@@ -12,9 +12,9 @@ public partial class TblTraining
 
     public string? TrainingName { get; set; }
 
-    public string TrainingCode { get; set; } = null!;
+    public string? TrainingCode { get; set; }
 
-    public int? TrainingtypeId { get; set; }
+    public int? Trainingtype_Id { get; set; }
 
     //public string? trainingtype_name { get; set; }
 
