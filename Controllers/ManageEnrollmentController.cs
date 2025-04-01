@@ -147,7 +147,30 @@ namespace LMS_Project_APIs.Controllers
             await _context.Database.ExecuteSqlRawAsync("EXEC complete_Training @studentid = {0}, @trainingid = {1}", request.StudentId, request.TrainingId);
 
             return Ok("Training completed successfully.");
-        }   
+        }
 
+
+
+        [HttpGet("GetTrainingDocument/{fileName}")]
+        public IActionResult GetTrainingDocument(string fileName)
+        {
+            if (string.IsNullOrEmpty(fileName))
+            {
+                return BadRequest("Invalid file name.");
+            }
+
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", fileName);
+
+            if (!System.IO.File.Exists(filePath))
+            {
+                return NotFound("File not found.");
+            }
+
+            var contentType = "application/pdf"; // Assuming all documents are PDFs
+            var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+
+            Response.Headers["Content-Disposition"] = "inline; filename=" + fileName; // 👈 Force browser to open inline
+            return File(fileStream, contentType);
+        }
     }
 }
