@@ -57,30 +57,34 @@ namespace LMS_Project_APIs.Controllers
             {
                 var studentIdParam = new SqlParameter("@NewStudentId", SqlDbType.Int) { Direction = ParameterDirection.Output };
 
-                await _context.Database.ExecuteSqlRawAsync("EXEC add_edit_Student @p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12,@p13, @p14, @p15, @p16,@NewStudentId OUTPUT",
+                await _context.Database.ExecuteSqlRawAsync("EXEC add_edit_student @p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15, @p16, @NewStudentId OUTPUT",
+                    new SqlParameter("@p0", tbstud.Student_Id == 0 ? (object)DBNull.Value : tbstud.Student_Id),
+                    new SqlParameter("@p1", tbstud.Student_No ?? (object)DBNull.Value),
+                    new SqlParameter("@p2", tbstud.Firstname ?? (object)DBNull.Value),
+                    new SqlParameter("@p3", tbstud.Middlename ?? (object)DBNull.Value),
+                    new SqlParameter("@p4", tbstud.Lastname ?? (object)DBNull.Value),
+                    new SqlParameter("@p5", tbstud.Username ?? (object)DBNull.Value),
+                    new SqlParameter("@p6", tbstud.Password ?? (object)DBNull.Value),
+                    new SqlParameter("@p7", tbstud.Email ?? (object)DBNull.Value),
+                    new SqlParameter("@p8", tbstud.Role_Id ?? (object)DBNull.Value),
+                    new SqlParameter("@p9", tbstud.Profile_Image ?? (object)DBNull.Value),
+                    new SqlParameter("@p10", tbstud.Archive_Date ?? (object)DBNull.Value),  
+                    new SqlParameter("@p11", tbstud.Phone_No ?? (object)DBNull.Value),
+                    new SqlParameter("@p12", tbstud.Address ?? (object)DBNull.Value),
+                    new SqlParameter("@p13", tbstud.City ?? (object)DBNull.Value),
+                    new SqlParameter("@p14", tbstud.Postal_Code ?? (object)DBNull.Value),
+                    new SqlParameter("@p15", tbstud.State ?? (object)DBNull.Value),
+                    new SqlParameter("@p16", tbstud.Country ?? (object)DBNull.Value),
+                    studentIdParam
+                );
 
-                    tbstud.Student_Id == 0 ? null : tbstud.Student_Id,
-                    tbstud.Student_No,
-                    tbstud.Firstname,
-                    tbstud.Middlename,
-                    tbstud.Lastname,
-                    tbstud.Username,
-                    tbstud.Password,
-                    tbstud.Email,
-                    tbstud.Role_Id,
-                    tbstud.Profile_Image,
-                    tbstud.Archive_Date,
-                    tbstud.Phone_No,
-                    tbstud.Address,
-                    tbstud.City,
-                    tbstud.Postal_Code,
-                    tbstud.State,
-                    tbstud.Country,
-                   studentIdParam
 
-                  );
-
-                int studentId = (int)studentIdParam.Value;
+                // If editing, ensure the existing Student_Id is returned
+                int studentId = studentIdParam.Value != DBNull.Value ? (int)studentIdParam.Value : tbstud.Student_Id;
+                if (studentId == 0)
+                {
+                    return StatusCode(500, new { Message = "Failed to retrieve student ID. Please try again." });
+                }
 
                 _httpContextAccessor.HttpContext.Session.SetInt32("StudentId", studentId);
                 return Ok(new { Message = "Student Added/Updated.", StudentId = studentId });
