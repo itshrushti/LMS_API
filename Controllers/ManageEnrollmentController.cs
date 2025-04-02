@@ -166,11 +166,11 @@ namespace LMS_Project_APIs.Controllers
                 return NotFound("File not found.");
             }
 
-            var contentType = "application/pdf"; // Assuming all documents are PDFs
+            var contentType = "application/pdf"; // Assuming PDFs
             var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
 
-            Response.Headers["Content-Disposition"] = "inline; filename=" + fileName; // 👈 Force browser to open inline
-            return File(fileStream, contentType);
+            // Ensure inline display in browser
+            return File(fileStream, contentType, fileName, enableRangeProcessing: true);
         }
     }
 }
