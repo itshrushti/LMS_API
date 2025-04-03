@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace LMS_Project_APIs.Controllers
 {
@@ -61,19 +63,39 @@ namespace LMS_Project_APIs.Controllers
             });
         }
 
+        [HttpPost("check-password")]
+        public async Task<IActionResult> CheckPassword([FromBody] CheckPasswordRequest request)
+        {
+            var user = await _context.DisplayStudents
+                .FromSqlRaw("SELECT s.*,r.role_name FROM Tbl_Student s JOIN tbl_Role r on r.role_id=s.role_id WHERE Student_Id = {0}", request.studentId)
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                return NotFound(new { message = "User not found" });
+            }
+
+            if (request.Password == user.Password)
+            {
+                return Ok(new { message = "Password is correct" });
+            }
+            else
+            {
+                return Unauthorized(new { message = "Incorrect password" });
+            }
+        }
+
+      
         [HttpPost("ResetPassword")]
         public async Task<IActionResult> ResetPassword(Models.ResetPassword request)
         {
-            var studentId = _httpContextAccessor.HttpContext.Session.GetInt32("StudentId");
 
-            if (studentId == null)
-                return Unauthorized(new { message = "No student is logged in." });
-
+           
             if (request == null || string.IsNullOrEmpty(request.Current_Password) || string.IsNullOrEmpty(request.New_Password) || string.IsNullOrEmpty(request.Confirm_Password))
                 return BadRequest(new { message = "All fields are required." });
 
             var result = await _context.Database.ExecuteSqlRawAsync("EXEC resetPassword @p0, @p1, @p2, @p3",
-                new SqlParameter("@p0", studentId),
+                new SqlParameter("@p0", request.Student_Id),
                 new SqlParameter("@p1", request.Current_Password),
                 new SqlParameter("@p2", request.New_Password),
                 new SqlParameter("@p3", request.Confirm_Password));
@@ -81,7 +103,7 @@ namespace LMS_Project_APIs.Controllers
             if (result > 0)
                 return Ok(new { message = "Password reset successfully." });
 
-            return BadRequest(new { message = "Password reset failed. Please check your inputs." });
+            return BadRequest(new { message = "Password reset failed." });
         }
 
         [HttpPost("ForgetPassword")]

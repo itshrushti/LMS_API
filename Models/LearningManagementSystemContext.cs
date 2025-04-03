@@ -24,6 +24,7 @@ public partial class LearningManagementSystemContext : DbContext
     public virtual DbSet<ResetPassword> ResetPasswords { get; set; }
     public virtual DbSet<ForgetPassword> ForgetPasswords { get; set; }
     public virtual DbSet<Logo> Logo { get; set; }
+    public virtual DbSet<CheckPasswordRequest> CheckPasswordRequest { get; set; }
 
 
     public virtual DbSet<CourseCatalog> CourseCatalogs { get; set; }
@@ -97,6 +98,7 @@ public partial class LearningManagementSystemContext : DbContext
         modelBuilder.Entity<TrainingDataByID>().HasNoKey().ToView(null);
         modelBuilder.Entity<Tbl_assignTrainings>().HasNoKey().ToView(null);
         modelBuilder.Entity<EditProfileImage>().HasNoKey().ToView(null);
+        modelBuilder.Entity<CheckPasswordRequest>().HasNoKey().ToView(null);
 
         modelBuilder.Entity<TblTraining>().ToTable("TblTraining"); // Ensure correct table mapping
 

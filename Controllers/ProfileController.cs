@@ -158,10 +158,6 @@ namespace LMS_Project_APIs.Controllers
             }
         }
 
-
-
-
-
         [HttpPost("EditStudentProfile")]
         public async Task<IActionResult> EditStudentProfile([FromBody] EditStudentProfile stud)
         {
@@ -266,9 +262,11 @@ namespace LMS_Project_APIs.Controllers
             var logo = _context.Logo.FromSqlRaw("EXEC display_CompanyLogo")
                 .AsEnumerable()
                 .FirstOrDefault();
-            return Ok(logo);
-        }
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
 
+            return Ok(new { companylogo = $"{baseUrl}/CompanyLogo/{logo.company_image}" 
+            });
+        }
     }
 }
 
