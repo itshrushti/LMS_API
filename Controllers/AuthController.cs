@@ -66,8 +66,8 @@ namespace LMS_Project_APIs.Controllers
         [HttpPost("check-password")]
         public async Task<IActionResult> CheckPassword([FromBody] CheckPasswordRequest request)
         {
-            var user = await _context.DisplayStudents
-                .FromSqlRaw("SELECT s.*,r.role_name FROM Tbl_Student s JOIN tbl_Role r on r.role_id=s.role_id WHERE Student_Id = {0}", request.studentId)
+            var user = await _context.CheckPasswordRequest
+                .FromSqlRaw("SELECT s.*,r.role_name FROM Tbl_Student s JOIN tbl_Role r on r.role_id=s.role_id WHERE Student_Id = {0}", request.student_Id)
                 .FirstOrDefaultAsync();
 
             if (user == null)

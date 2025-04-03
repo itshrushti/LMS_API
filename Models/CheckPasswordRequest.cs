@@ -2,7 +2,7 @@
 {
     public class CheckPasswordRequest
     {
-        public int studentId { get; set; }
+        public int student_Id { get; set; }
         public string Password { get; set; }
     }
 }
