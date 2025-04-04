@@ -24,34 +24,29 @@ namespace LMS_Project_APIs.Controllers
             _httpContextAccessor = httpContextAccessor;
         }
 
-        //[HttpGet("GetStudentProfile")]
+        [HttpGet("GetStudentProfile")]
 
-        //public ActionResult GetStudentProfile([FromQuery] int studentId) 
-        //{
-        //    if (studentId <= 0)
-        //    {
-        //        return BadRequest(new { Message = "Invalid Student ID." });
-        //    }
+        public ActionResult GetStudentProfile([FromQuery] int studentId)
+        {
+            if (studentId <= 0)
+            {
+                return BadRequest(new { Message = "Invalid Student ID." });
+            }
 
-        //    var student = _context.EditStudentProfiles
-        //        .FromSqlRaw("EXEC getEditProfile @p0", studentId)
-        //        .AsEnumerable()
-        //        .FirstOrDefault();
+            var student = _context.EditStudentProfiles
+                .FromSqlRaw("EXEC getEditProfile @p0", studentId)
+                .AsEnumerable()
+                .FirstOrDefault();
 
-        //    if (student == null)
-        //    {
-        //        return NotFound(new { Message = "Student not found." });
-        //    }
-
-        //    var baseUrl = $"{Request.Scheme}://{Request.Host}";
+            if (student == null)
+            {
+                return NotFound(new { Message = "Student not found." });
+            }
 
             return Ok(new
             {
-                studentId = student.Student_Id,
-                firstname = student.firstname,
-                lastname = student.lastname,
+                studentId = student.Student_Id,              
                 Email = student.Email,
-                ProfileImage = $"{baseUrl}/ProfileImages/{student.Profile_Image_Name}", 
                 Phoneno = student.Phone_No,
                 address = student.Address,
                 city = student.City,
