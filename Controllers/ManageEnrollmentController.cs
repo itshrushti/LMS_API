@@ -150,6 +150,28 @@ namespace LMS_Project_APIs.Controllers
         }
 
 
+        [HttpPost("Requestagain")]
+        public async Task<IActionResult> ReRequest([FromBody] TrainingStartModel request)
+        {
+            if (request == null || request.StudentId == null || request.TrainingId == null)
+            {
+                return BadRequest("Invalid data provided.");
+            }
+
+            var studentparam = new SqlParameter("@studentid", request.StudentId ?? (object)DBNull.Value);
+            var trainingparam = new SqlParameter("@trainingid", request.TrainingId ?? (object)DBNull.Value);
+ 
+
+            var studentIdParam = new SqlParameter("@studentid", studentparam);
+            var trainingIdParam = new SqlParameter("@trainingid", trainingparam);
+
+            // Call stored procedure
+            await _context.Database.ExecuteSqlRawAsync("EXEC sp_RequestTrainingAgain @student_id = {0}, @training_id = {1}", request.StudentId, request.TrainingId );
+
+            return Ok("Training request approved successfully.");
+        }
+
+
 
         [HttpGet("GetTrainingDocument/{fileName}")]
         public IActionResult GetTrainingDocument(string fileName)
