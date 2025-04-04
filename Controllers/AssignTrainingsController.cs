@@ -15,7 +15,6 @@ namespace LMS_Project_APIs.Controllers
         private readonly IHttpContextAccessor _httpContextAccessor;
 
 
-
         public AssignTrainingsController(LearningManagementSystemContext context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
@@ -26,7 +25,8 @@ namespace LMS_Project_APIs.Controllers
         [HttpPost("AssignTrainings")]
         public async Task<IActionResult> AssignTrainings([FromBody] AssignTrainings tblassign)
         {
-            if (tblassign == null || tblassign.StudentId == 0 )
+            if (tblassign == null || tblassign.StudentId == 0)
+
             {
                 return BadRequest("Invalid student ID or training IDs.");
             }
@@ -46,6 +46,20 @@ namespace LMS_Project_APIs.Controllers
             }
         }
 
-    }
-}
+        [HttpGet("GetTrainingIds/{studentId}")]
+        public async Task<IActionResult> GetTrainingIds(int studentId)
+        {
+            var trainingIds = await _context.Database
+                .SqlQueryRaw<int>("EXEC GetStudentTrainings @p0", studentId)
+                .ToListAsync();
 
+            if (!trainingIds.Any())
+                return NotFound(new { message = "No assigned trainings found" });
+
+            return Ok(trainingIds); // ✅ Returns JSON array `[1,2,3]`
+        }
+
+
+    }
+
+}

@@ -24,6 +24,7 @@ public partial class LearningManagementSystemContext : DbContext
     public virtual DbSet<ResetPassword> ResetPasswords { get; set; }
     public virtual DbSet<ForgetPassword> ForgetPasswords { get; set; }
     public virtual DbSet<Logo> Logo { get; set; }
+    public virtual DbSet<CheckPasswordRequest> CheckPasswordRequest { get; set; }
 
 
     public virtual DbSet<CourseCatalog> CourseCatalogs { get; set; }
@@ -48,6 +49,9 @@ public partial class LearningManagementSystemContext : DbContext
 
     public virtual DbSet<TblAssignStudents> TblAssignStudentss { get; set; }
 
+    public virtual DbSet<Tbl_assignTrainings> TblAssignTrainings { get; set; }
+
+
     public virtual DbSet<TblCountAdminDashboard> TblCountAdminDashboards { get; set; }
 
     public virtual DbSet<TblCountStudentDashboard> TblCountStudentDashboards { get; set; }
@@ -62,6 +66,7 @@ public partial class LearningManagementSystemContext : DbContext
 
     public virtual DbSet<TrainingDataByID> TrainingDataByIDs { get; set; }
 
+    public virtual DbSet<EditProfileImage> EditProfileImage { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
@@ -93,6 +98,9 @@ public partial class LearningManagementSystemContext : DbContext
         modelBuilder.Entity<DisplayConfiguration>().HasNoKey().ToView(null);
         modelBuilder.Entity<DisplayTraining>().HasNoKey().ToView(null);
         modelBuilder.Entity<TrainingDataByID>().HasNoKey().ToView(null);
+        modelBuilder.Entity<Tbl_assignTrainings>().HasNoKey().ToView(null);
+        modelBuilder.Entity<EditProfileImage>().HasNoKey().ToView(null);
+        modelBuilder.Entity<CheckPasswordRequest>().HasNoKey().ToView(null);
 
         modelBuilder.Entity<TblTraining>().ToTable("TblTraining"); // Ensure correct table mapping
 

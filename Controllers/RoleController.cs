@@ -17,7 +17,7 @@ namespace LMS_Project_APIs.Controllers
         }
 
         [HttpGet("GetRoles")]
-        //[AdminAuthorize]
+
         public async Task<IActionResult> GetRoles()
         {
             try
@@ -32,7 +32,6 @@ namespace LMS_Project_APIs.Controllers
         }
 
         [HttpPost("AddEditRole")]
-        [AdminAuthorize]
         public async Task<IActionResult> AddEditRole(Role role)
         {
             try
@@ -51,7 +50,6 @@ namespace LMS_Project_APIs.Controllers
         }
 
         [HttpDelete("DeleteRole")]
-        [AdminAuthorize]
         public async Task<IActionResult> DeleteRole(int roleid)
         {
            
@@ -68,7 +66,6 @@ namespace LMS_Project_APIs.Controllers
         }
 
         [HttpGet("searchRole")]
-        [AdminAuthorize]
         public async Task<IActionResult> SearchStudent(string searchValue)
         {
             if (string.IsNullOrEmpty(searchValue))

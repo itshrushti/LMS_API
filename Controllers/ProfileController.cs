@@ -45,54 +45,76 @@ namespace LMS_Project_APIs.Controllers
 
         //    var baseUrl = $"{Request.Scheme}://{Request.Host}";
 
-        //    return Ok(new
-        //    {
-        //        studentId = student.Student_Id,
-        //        firstname = student.firstname,
-        //        lastname = student.lastname,
-        //        Email = student.Email,
-        //        ProfileImage = $"{baseUrl}/ProfileImages/{student.Profile_Image_Name}", 
-        //        Phoneno = student.Phone_No,
-        //        address = student.Address,
-        //        city = student.City,
-        //        postalcode = student.Postal_Code,
-        //        state = student.State,
-        //        country = student.Country
-        //    });
-        //}
-
-
-        [HttpPost("EditStudentProfile")]
-        public async Task<IActionResult> EditStudentProfile([FromForm] EditStudentProfile stud)
-        {
-            var studentId = _httpContextAccessor.HttpContext.Session.GetInt32("StudentId");
-
-            var studentExists = await _context.TblStudents
-      .FromSqlRaw("SELECT COUNT(*) as StudentCount FROM tbl_Student WHERE Student_Id = @p0", studentId)
-      .Select(s => s.Student_Id)
-      .CountAsync();
-
-            if (studentExists == 0)
+            return Ok(new
             {
-                return BadRequest(new { Message = "Student not found in tbl_Student." });
+                studentId = student.Student_Id,
+                firstname = student.firstname,
+                lastname = student.lastname,
+                Email = student.Email,
+                ProfileImage = $"{baseUrl}/ProfileImages/{student.Profile_Image_Name}", 
+                Phoneno = student.Phone_No,
+                address = student.Address,
+                city = student.City,
+                postalcode = student.Postal_Code,
+                state = student.State,
+                country = student.Country
+            });
+        }
+
+        [HttpGet("GetProfileImage")]
+
+        public ActionResult GetProfileImage([FromQuery] int studentId)
+        {
+            if (studentId <= 0)
+            {
+                return BadRequest(new { Message = "Invalid Student ID." });
             }
 
+            var student = _context.EditProfileImage
+                .FromSqlRaw("EXEC getProfileImage @p0", studentId)
+                .AsEnumerable()
+                .FirstOrDefault();
 
-            string filename = null;
-            string defaultImage = "profile_image.jpg";
+            if (student == null)
+            {
+                return NotFound(new { Message = "Student not found." });
+            }
 
-            var existingProfileImage = await _context.TblStudents
-     .FromSqlRaw("SELECT Profile_Image FROM tbl_Student WHERE Student_Id = @p0", studentId)
-     .Select(s => s.Profile_Image)
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
+
+            return Ok(new
+            {
+                ProfileImage = $"{baseUrl}/ProfileImages/{student.Profile_Image_Name}",
+
+            });
+        }
+
+
+        [HttpPost("EditStudentProfileImage")]
+        public async Task<IActionResult> EditStudentProfileImage(IFormFile profileImage, [FromForm] int studentId)
+        {
+            if (studentId <= 0)
+            {
+                return BadRequest(new { Message = "Invalid student ID." });
+            }
+
+            // Fetch existing student record
+            var student = await _context.TblStudents
+     .FromSqlRaw("SELECT Student_Id, Profile_Image FROM tbl_Student WHERE Student_Id = @p0", studentId)
+     .Select(s => new { s.Student_Id, s.Profile_Image })
      .FirstOrDefaultAsync();
 
-            if (string.IsNullOrEmpty(existingProfileImage))
+
+            if (student == null)
             {
-                existingProfileImage = defaultImage; 
+                return NotFound(new { Message = "Student not found." });
             }
 
+            string defaultImage = "profile_image.jpg";
+            string existingProfileImage = student.Profile_Image ?? defaultImage;
+            string filename = existingProfileImage;
 
-            if (stud.Profile_Image != null && stud.Profile_Image.Length > 0)
+            if (profileImage != null && profileImage.Length > 0)
             {
                 string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/ProfileImages");
 
@@ -101,6 +123,7 @@ namespace LMS_Project_APIs.Controllers
                     Directory.CreateDirectory(uploadsFolder);
                 }
 
+                // Delete old image if it's not the default one
                 if (!string.IsNullOrEmpty(existingProfileImage) && existingProfileImage != defaultImage)
                 {
                     string oldFilePath = Path.Combine(uploadsFolder, existingProfileImage);
@@ -110,42 +133,70 @@ namespace LMS_Project_APIs.Controllers
                     }
                 }
 
-                filename = Path.GetFileName(stud.Profile_Image.FileName);
+                // Generate a unique filename
+                filename = profileImage.FileName;
                 string filePath = Path.Combine(uploadsFolder, filename);
+
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
-                    await stud.Profile_Image.CopyToAsync(stream);
+                    await profileImage.CopyToAsync(stream);
                 }
             }
-            else
-            {
-                filename = existingProfileImage;
-            }
+
             try
             {
-                await _context.Database.ExecuteSqlRawAsync("EXEC edit_studentProfile @p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8",
+                await _context.Database.ExecuteSqlRawAsync(
+       "EXEC edit_profilePhoto @p0, @p1",
+       new SqlParameter("@p0", (object)filename ?? DBNull.Value),
+       new SqlParameter("@p1", studentId)
+   );
 
-                    studentId,
+                return Ok(new { Message = "Profile image updated successfully.", FileName = filename });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred.", Error = ex.Message });
+            }
+        }
+
+        [HttpPost("EditStudentProfile")]
+        public async Task<IActionResult> EditStudentProfile([FromBody] EditStudentProfile stud)
+        {
+            var studentExists = await _context.TblStudents
+                .FromSqlRaw("SELECT COUNT(*) as StudentCount FROM tbl_Student WHERE Student_Id = @p0", stud.Student_Id)
+                .Select(s => s.Student_Id)
+                .CountAsync();
+
+            if (studentExists == 0)
+            {
+                return BadRequest(new { Message = "Student not found in tbl_Student." });
+            }
+
+            try
+            {
+                // Update the student profile information
+                await _context.Database.ExecuteSqlRawAsync("EXEC edit_studentProfile @p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7",
+                    stud.Student_Id,
                     stud.Email,
-                    filename,
                     stud.Phone_No,
                     stud.Address,
                     stud.City,
                     stud.Postal_Code,
                     stud.State,
                     stud.Country
-                  );
+                );
+
                 return Ok(new { Message = "Student Profile Updated." });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Message = "An error : ", Error = ex.Message });
+                return StatusCode(500, new { Message = "An error occurred: ", Error = ex.Message });
             }
         }
 
 
+
         [HttpPost("SetCompanyLogo")]
-        [AdminAuthorize]
         public async Task<IActionResult> SetCompanyLogo(IFormFile file)
         {
             if (file == null || file.Length == 0)
@@ -212,9 +263,11 @@ namespace LMS_Project_APIs.Controllers
             var logo = _context.Logo.FromSqlRaw("EXEC display_CompanyLogo")
                 .AsEnumerable()
                 .FirstOrDefault();
-            return Ok(logo);
-        }
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
 
+            return Ok(new { companylogo = $"{baseUrl}/CompanyLogo/{logo.company_image}" 
+            });
+        }
     }
 }
 
