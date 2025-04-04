@@ -40,7 +40,7 @@ namespace LMS_Project_APIs.Controllers
                 //trainingid,
                 //tblassign.StudentIds ?? (object)DBNull.Value
                 );
-                return Ok("Training Assigned to Student successfully.");
+                return Ok(new { message = "Training Assigned to Student successfully." });
             }
             catch (Exception ex)
             {

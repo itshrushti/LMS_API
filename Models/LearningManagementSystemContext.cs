@@ -36,7 +36,9 @@ public partial class LearningManagementSystemContext : DbContext
     public virtual DbSet<tbl_Training> Tbl_Training { get; set; } 
     public virtual DbSet<PendingApproval> PendingApprovals { get; set; } 
 
-    public virtual DbSet<TblTraining> TblTraining { get; set; }
+    public virtual DbSet<TblTraining> TblTrainings { get; set; }
+
+    public virtual DbSet<DisplayTrainingbyId> DisplayTrainingbyId { get; set; }
 
     public virtual DbSet<TblTrainingType> TblTrainingTypes { get; set; }
 
@@ -103,9 +105,9 @@ public partial class LearningManagementSystemContext : DbContext
         modelBuilder.Entity<TranscriptSearching>().HasNoKey().ToView(null); 
         modelBuilder.Entity<TrainingStartModel>().HasNoKey().ToView(null);
         modelBuilder.Entity<PendingApproval>().HasNoKey().ToView(null);
+        modelBuilder.Entity<DisplayTrainingbyId>().HasNoKey().ToView(null);
 
         modelBuilder.Entity<tbl_Training>().HasKey(t => t.training_id);
-
 
         OnModelCreatingPartial(modelBuilder);
     }

@@ -115,6 +115,25 @@ namespace LMS_Project_APIs.Controllers
 
         }
 
+        [HttpGet("searchPendingApproval")]
+        //[AdminAuthorize]
+        public async Task<ActionResult> searchPendingApproval(string searchValue)
+        {
+            if (string.IsNullOrWhiteSpace(searchValue))
+            {
+                return BadRequest("Search value cannot be empty!");
+            }
+
+            var results = await _context.PendingApprovals
+                                        .FromSqlRaw("EXEC display_pending_Approval @p0", searchValue)
+                                        .ToListAsync();
+            if (results == null || results.Count == 0)
+            {
+                return NotFound("No matching pending approval records found.");
+            }
+            return Ok(results);
+        }
+
         [HttpGet("GetInProgress/{studentId}")]
         public async Task<IActionResult> GetInProgress(int studentId)
         {

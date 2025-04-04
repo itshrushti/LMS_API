@@ -95,17 +95,24 @@ namespace LMS_Project_APIs.Controllers
                 return BadRequest("Invalid data provided.");
             }
 
-            var studentparam = new SqlParameter("@studentid", request.StudentId ?? (object)DBNull.Value);
-            var trainingparam = new SqlParameter("@trainingid", request.TrainingId ?? (object)DBNull.Value);
-            var actionParam = new SqlParameter("@action", "ACCEPT");
+            //var studentparam = new SqlParameter("@studentid", request.StudentId ?? (object)DBNull.Value);
+            //var trainingparam = new SqlParameter("@trainingid", request.TrainingId ?? (object)DBNull.Value);
+            //var actionParam = new SqlParameter("@action", "ACCEPT");
 
-            var studentIdParam = new SqlParameter("@studentid", studentparam);
-            var trainingIdParam = new SqlParameter("@trainingid", trainingparam);
+            //var studentIdParam = new SqlParameter("@studentid", studentparam);
+            //var trainingIdParam = new SqlParameter("@trainingid", trainingparam);
 
             // Call stored procedure
-            await _context.Database.ExecuteSqlRawAsync("EXEC training_Approval @student_id = {0}, @training_id = {1}, @action = {2}", request.StudentId, request.TrainingId, "ACCEPT");
+            try
+            {
+                await _context.Database.ExecuteSqlRawAsync("EXEC training_Approval @student_id = {0}, @training_id = {1}, @action = {2}", request.StudentId, request.TrainingId, "ACCEPT");
 
-            return Ok("Training request approved successfully.");
+                return Ok(new { message = "Training request approved successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
         [HttpPost("Deny")]
@@ -116,17 +123,23 @@ namespace LMS_Project_APIs.Controllers
                 return BadRequest("Invalid data provided.");
             }
 
-            var studentparam = new SqlParameter("@studentid", request.StudentId ?? (object)DBNull.Value);
-            var trainingparam = new SqlParameter("@trainingid", request.TrainingId ?? (object)DBNull.Value);
-            var actionParam = new SqlParameter("@action", "DENY");
+            //var studentparam = new SqlParameter("@studentid", request.StudentId ?? (object)DBNull.Value);
+            //var trainingparam = new SqlParameter("@trainingid", request.TrainingId ?? (object)DBNull.Value);
+            //var actionParam = new SqlParameter("@action", "DENY");
 
-            var studentIdParam = new SqlParameter("@studentid", studentparam);
-            var trainingIdParam = new SqlParameter("@trainingid", trainingparam);
+            //var studentIdParam = new SqlParameter("@studentid", studentparam);
+            //var trainingIdParam = new SqlParameter("@trainingid", trainingparam);
+            try
+            {
+                // Call stored procedure
+                await _context.Database.ExecuteSqlRawAsync("EXEC training_Approval @student_id = {0}, @training_id = {1}, @action = {2}", request.StudentId, request.TrainingId, "DENY");
 
-            // Call stored procedure
-            await _context.Database.ExecuteSqlRawAsync("EXEC training_Approval @student_id = {0}, @training_id = {1}, @action = {2}", request.StudentId, request.TrainingId, "DENY");
-
-            return Ok("Training request denied successfully.");
+                return Ok(new { message = "Training request denied successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
         [HttpPost("CompletedTraining")]

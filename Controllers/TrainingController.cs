@@ -40,6 +40,22 @@ namespace LMS_Project_APIs.Controllers
             return Ok(trainings);
         }
 
+        [HttpGet("getTrainingById/{id}")]
+        public async Task<IActionResult> GetTrainingById(int id)
+        {
+            var training =  _context.DisplayTrainingbyId
+                .FromSqlRaw("EXEC get_training_by_id @p0", id)
+                .AsEnumerable()
+                .FirstOrDefault();
+
+            if (training == null)
+            {
+                return NotFound(new { Message = "Training not found." });
+            }
+
+            return Ok(training);
+        }
+
 
         [HttpPost("addTraining")]
         //[AdminAuthorize]
@@ -159,7 +175,7 @@ namespace LMS_Project_APIs.Controllers
         public async Task<IActionResult> UpdateTraining(TblTraining training)
         {
             var trainingId = training.TrainingId;
-            var trainingExist = await _context.TblTraining
+            var trainingExist = await _context.TblTrainings
                                             .FromSqlRaw("SELECT COUNT(*)AS TrainingCount FROM tbl_training WHERE training_id = @p0", trainingId)
                                             .Select(x => x.TrainingId)
                                             .CountAsync();
@@ -168,6 +184,7 @@ namespace LMS_Project_APIs.Controllers
             {
                 return BadRequest(new { Message = "Training not found in tbl_training." });
             }
+
 
             //thumbnail Image update
             string imagePath = null;
@@ -252,7 +269,7 @@ namespace LMS_Project_APIs.Controllers
             try
             {
 
-                await _context.Database.ExecuteSqlRawAsync("EXEC add_edit_training @p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13",
+                await _context.Database.ExecuteSqlRawAsync("EXEC update_training @p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13",
                     training.TrainingId,
                     training.TrainingName,
                     training.TrainingCode,
@@ -268,7 +285,8 @@ namespace LMS_Project_APIs.Controllers
                     training.CendDate,
                     imagePath
                     );
-                
+
+
                 return Ok(new { Message = "Training details updated successfully.", ImagePath = imagePath, DocumentPath = docPath });
             }
             catch (Exception ex)
@@ -279,22 +297,85 @@ namespace LMS_Project_APIs.Controllers
 
 
 
+        //[HttpDelete("deleteTraining")]
+        ////[AdminAuthorize]
+        //public async Task<IActionResult> DeleteTraining([FromBody] List<int> trainingIds)
+        //{
+        //    try
+        //    {
+        //        string idStr = string.Join(",", trainingIds);
+
+        //        // Fetch file paths from database before deletion
+        //        var fileRecords = await _context.TblUpdateTraining
+        //            .FromSqlRaw("SELECT thumbnail_image, document_file FROM tbl_training WHERE training_id IN ({0})", idStr)
+        //            .Select(x => new { x.thumbnail_image, x.document_file })
+        //            .ToListAsync();
+
+        //        string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+
+        //        foreach (var fileRecord in fileRecords)
+        //        {
+        //            var filePaths = new List<string> { fileRecord.thumbnail_image, fileRecord.document_file };
+
+        //            foreach (var filePath in filePaths)
+        //            {
+        //                if (!string.IsNullOrEmpty(filePath))
+        //                {
+        //                    string fullFilePath = Path.Combine(uploadsFolder, filePath);
+        //                    if (System.IO.File.Exists(fullFilePath))
+        //                    {
+        //                        System.IO.File.Delete(fullFilePath);
+        //                    }
+        //                }
+        //            }
+        //        }
+
+        //        // Call stored procedure to delete training records
+        //        await _context.Database.ExecuteSqlRawAsync("EXEC delete_Training @p0", idStr);
+
+        //        return Ok(new { Message = "Trainings and their associated files deleted successfully." });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, new { Message = "An error occurred", Error = ex.Message });
+        //    }
+        //}
+
         [HttpDelete("deleteTraining")]
-        [AdminAuthorize]
         public async Task<IActionResult> DeleteTraining([FromBody] List<int> trainingIds)
         {
             try
             {
+                // ✅ Step 1: Validate input
+                if (trainingIds == null || trainingIds.Count == 0)
+                {
+                    return BadRequest(new { Message = "No training IDs received." });
+                }
+
+                Console.WriteLine($"Received Training IDs: {string.Join(",", trainingIds)}");
+
+                // ✅ Step 2: Convert List<int> to comma-separated string
                 string idStr = string.Join(",", trainingIds);
 
-                // Fetch file paths from database before deletion
+                // ✅ Step 3: Fetch file paths using Raw SQL Query (without Where)
                 var fileRecords = await _context.TblUpdateTraining
-                    .FromSqlRaw("SELECT thumbnail_image, document_file FROM tbl_training WHERE training_id IN ({0})", idStr)
+                    .FromSqlRaw($"SELECT training_id, thumbnail_image, document_file FROM tbl_training WHERE training_id IN ({idStr})")
                     .Select(x => new { x.thumbnail_image, x.document_file })
                     .ToListAsync();
 
-                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+                if (fileRecords == null || fileRecords.Count == 0)
+                {
+                    return NotFound(new { Message = "No matching training records found." });
+                }
 
+                // ✅ Step 4: Ensure uploads folder exists
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    return StatusCode(500, new { Message = "Uploads folder not found." });
+                }
+
+                // ✅ Step 5: Delete associated files
                 foreach (var fileRecord in fileRecords)
                 {
                     var filePaths = new List<string> { fileRecord.thumbnail_image, fileRecord.document_file };
@@ -312,13 +393,14 @@ namespace LMS_Project_APIs.Controllers
                     }
                 }
 
-                // Call stored procedure to delete training records
-                await _context.Database.ExecuteSqlRawAsync("EXEC delete_Training @p0", idStr);
+                // ✅ Step 6: Delete records using stored procedure
+                await _context.Database.ExecuteSqlRawAsync("EXEC delete_Training @p0", new[] { idStr });
 
                 return Ok(new { Message = "Trainings and their associated files deleted successfully." });
             }
             catch (Exception ex)
             {
+                Console.WriteLine("Error in DeleteTraining API: " + ex.Message);
                 return StatusCode(500, new { Message = "An error occurred", Error = ex.Message });
             }
         }
