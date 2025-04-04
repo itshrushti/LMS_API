@@ -139,5 +139,39 @@ namespace LMS_Project_APIs.Controllers
             }
         }
 
+        [HttpPost("selfRegister")]
+        public async Task<IActionResult> selfRegister(AddStudent tbstud)
+        {
+            try
+            {
+
+                await _context.Database.ExecuteSqlRawAsync("EXEC selfRegister @p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15, @p16",
+                    new SqlParameter("@p0", tbstud.Student_Id == 0),
+                    new SqlParameter("@p1", tbstud.Student_No ?? (object)DBNull.Value),
+                    new SqlParameter("@p2", tbstud.Firstname ?? (object)DBNull.Value),
+                    new SqlParameter("@p3", tbstud.Middlename ?? (object)DBNull.Value),
+                    new SqlParameter("@p4", tbstud.Lastname ?? (object)DBNull.Value),
+                    new SqlParameter("@p5", tbstud.Username ?? (object)DBNull.Value),
+                    new SqlParameter("@p6", tbstud.Password ?? (object)DBNull.Value),
+                    new SqlParameter("@p7", tbstud.Email ?? (object)DBNull.Value),
+                    new SqlParameter("@p8", tbstud.Role_Id ?? (object)DBNull.Value),
+                    new SqlParameter("@p9", tbstud.Profile_Image ?? (object)DBNull.Value),
+                    new SqlParameter("@p10", tbstud.Archive_Date ?? (object)DBNull.Value),
+                    new SqlParameter("@p11", tbstud.Phone_No ?? (object)DBNull.Value),
+                    new SqlParameter("@p12", tbstud.Address ?? (object)DBNull.Value),
+                    new SqlParameter("@p13", tbstud.City ?? (object)DBNull.Value),
+                    new SqlParameter("@p14", tbstud.Postal_Code ?? (object)DBNull.Value),
+                    new SqlParameter("@p15", tbstud.State ?? (object)DBNull.Value),
+                    new SqlParameter("@p16", tbstud.Country ?? (object)DBNull.Value)
+                );
+
+                return Ok(new { Message = "Student Added/Updated." });
+            }
+
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error : ", Error = ex.Message });
+            }
+        }
     }
 }
