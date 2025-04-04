@@ -63,7 +63,7 @@ namespace LMS_Project_APIs.Controllers
             });
         }
 
-        [HttpPost("check-password")]
+        [HttpPost("checkPassword")]
         public async Task<IActionResult> CheckPassword([FromBody] CheckPasswordRequest request)
         {
             var user = await _context.CheckPasswordRequest
@@ -106,11 +106,36 @@ namespace LMS_Project_APIs.Controllers
             return BadRequest(new { message = "Password reset failed." });
         }
 
-        [HttpPost("ForgetPassword")]
-        public ActionResult ForgetPassword(ForgetPassword model)
+        [HttpPost("CheckUserExists")]
+        public IActionResult CheckUserExists([FromBody] string emailOrUsername)
         {
-            if (model == null || string.IsNullOrEmpty(model.UsernameAndEmail) ||
-                string.IsNullOrEmpty(model.New_Password) || string.IsNullOrEmpty(model.Confirm_Password))
+            if (string.IsNullOrEmpty(emailOrUsername))
+            {
+                return BadRequest(new { message = "Username or Email is required." });
+            }
+
+            var students = _context.DisplayStudents
+                .FromSqlRaw("EXEC display_Student")
+                .AsEnumerable()
+                .ToList();
+
+            var userExists = students.Any(s => s.Username == emailOrUsername || s.Email == emailOrUsername);
+
+            if (!userExists)
+            {
+                return BadRequest(new { message = "User not found." });
+            }
+
+            return Ok(new { message = "User exists." });
+        }
+
+
+        [HttpPost("ForgetPassword")]
+        public async Task<IActionResult> ForgetPassword([FromBody] ForgetPassword model)
+        {
+            if (string.IsNullOrEmpty(model.UsernameAndEmail) ||
+                string.IsNullOrEmpty(model.New_Password) ||
+                string.IsNullOrEmpty(model.Confirm_Password))
             {
                 return BadRequest(new { message = "All fields are required." });
             }
@@ -120,17 +145,7 @@ namespace LMS_Project_APIs.Controllers
                 return BadRequest(new { message = "New password and confirm password do not match." });
             }
 
-            var userExists =  _context.DisplayStudents
-                .FromSqlRaw("EXEC display_Student")
-                .AsEnumerable()
-                .Any(s => s.Username == model.UsernameAndEmail || s.Email == model.UsernameAndEmail);
-
-            if (!userExists)
-            {
-                return BadRequest(new { message = "User not found in the system." });
-            }
-
-            var result = _context.Database.ExecuteSqlRawAsync(
+            var result = await _context.Database.ExecuteSqlRawAsync(
                 "EXEC forgetPassword @p0, @p1, @p2",
                 new SqlParameter("@p0", model.UsernameAndEmail),
                 new SqlParameter("@p1", model.New_Password),
@@ -139,6 +154,7 @@ namespace LMS_Project_APIs.Controllers
 
             return Ok(new { message = "Password has been reset successfully." });
         }
+
 
 
         //only for testing
