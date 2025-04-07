@@ -12,10 +12,12 @@ namespace LMS_Project_APIs.Controllers
     public class DisplayDataController : ControllerBase
     {
         private readonly LearningManagementSystemContext _context;
+        private readonly IWebHostEnvironment _env;
 
-        public DisplayDataController(LearningManagementSystemContext context)
+        public DisplayDataController(LearningManagementSystemContext context, IWebHostEnvironment env)
         {
             _context = context;
+            _env = env;
         }
 
         [HttpGet("DisplayCourseCatalog/{studentId}")]
@@ -61,15 +63,15 @@ namespace LMS_Project_APIs.Controllers
         [HttpGet("DisplayTrainingTrascript/{studentId}")]
         public async Task<IActionResult> GetTrainingTrascript(int studentId)
         {
-             
-                var studentIdParam = new SqlParameter("@studentid", studentId);
 
-                var transcriptdata = await _context.TrainingTrascriptDatas
-                    .FromSqlRaw("EXEC sp_DisplayTranscriptData @studentid", studentIdParam)
-                    .ToListAsync();
+            var studentIdParam = new SqlParameter("@studentid", studentId);
 
-                return Ok(transcriptdata);
- 
+            var transcriptdata = await _context.TrainingTrascriptDatas
+                .FromSqlRaw("EXEC sp_DisplayTranscriptData @studentid", studentIdParam)
+                .ToListAsync();
+
+            return Ok(transcriptdata);
+
 
         }
 
@@ -99,7 +101,7 @@ namespace LMS_Project_APIs.Controllers
         public async Task<IActionResult> DisplayPendingApproval()
         {
             try
-            { 
+            {
 
                 var approvaldata = await _context.PendingApprovals
                     .FromSqlRaw("EXEC display_pending_Approval")
@@ -201,6 +203,46 @@ namespace LMS_Project_APIs.Controllers
             return Ok(trainingdata);
         }
 
+        //get training thumbnail image 
+        [HttpGet("GetThumbnail")]
+        public IActionResult GetThumbnail(string fileName, string type)
+        {
+            var uploadsPath = Path.Combine(_env.WebRootPath, "uploads");
+            var defaultsPath = Path.Combine(_env.WebRootPath, "uploads");
+
+            string filePath = string.IsNullOrEmpty(fileName)
+                ? ""
+                : Path.Combine(uploadsPath, fileName);
+             
+            if (!System.IO.File.Exists(filePath))
+            { 
+                var defaultFile = type?.ToLower() == "document"
+                    ? "Doc_image.jpg"
+                    : "EL_image.jpg";
+
+                filePath = Path.Combine(defaultsPath, defaultFile);
+
+                if (!System.IO.File.Exists(filePath))
+                {
+                    return NotFound("Image not found.");
+                }
+            }
+
+            var mimeType = GetMimeType(filePath); 
+            return PhysicalFile(filePath, mimeType);
+        }
+
+        private string GetMimeType(string filePath)
+        {
+            var ext = Path.GetExtension(filePath).ToLowerInvariant();
+            return ext switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".gif" => "image/gif",
+                _ => "application/octet-stream"
+            };
+        }
 
     }
 }
