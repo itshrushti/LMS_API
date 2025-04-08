@@ -139,21 +139,15 @@ namespace LMS_Project_APIs.Controllers
         [HttpGet("GetInProgress/{studentId}")]
         public async Task<IActionResult> GetInProgress(int studentId)
         {
-            try
-            {
+            
                 var studentIdParam = new SqlParameter("@studentid", studentId);
 
-                var courseCatalog = await _context.CourseCatalogs
+                var courseCatalog = await _context.DisplayIDPs
                     .FromSqlRaw("EXEC display_InProgress_Trainings @studentid", studentIdParam)
                     .ToListAsync();
 
                 return Ok(courseCatalog);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error: {ex.Message}");
-                return StatusCode(500, "An error occurred while fetching the course catalog.");
-            }
+             
         }
 
 

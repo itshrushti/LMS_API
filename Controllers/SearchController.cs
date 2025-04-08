@@ -89,9 +89,7 @@ namespace LMS_Project_APIs.Controllers
 
         [HttpGet("SearchEnroll")]
         public async Task<IActionResult> SearchEnrollment(string searchValue, int studentID)
-        {
-            try
-            {
+        { 
                 var searchParam = new SqlParameter("@searchvalue", searchValue ?? (object)DBNull.Value);
                 var studentid = new SqlParameter("@studentId", studentID);
 
@@ -101,12 +99,7 @@ namespace LMS_Project_APIs.Controllers
 
                 return Ok(searchResults);
 
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error: {ex.Message}");
-                return StatusCode(500, "An error occurred while fetching the course catalog.");
-            }
+           
 
         }
     }
