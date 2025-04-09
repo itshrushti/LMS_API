@@ -106,6 +106,7 @@ namespace LMS_Project_APIs.Controllers
             return BadRequest(new { message = "Password reset failed." });
         }
 
+
         [HttpPost("CheckUserExists")]
         public IActionResult CheckUserExists([FromBody] string emailOrUsername)
         {
