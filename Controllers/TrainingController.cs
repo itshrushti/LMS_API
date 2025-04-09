@@ -43,7 +43,7 @@ namespace LMS_Project_APIs.Controllers
         [HttpGet("getTrainingById/{id}")]
         public async Task<IActionResult> GetTrainingById(int id)
         {
-            var training =  _context.DisplayTrainingbyId
+            var training =  _context.DisplayTrainingbyIds
                 .FromSqlRaw("EXEC get_training_by_id @p0", id)
                 .AsEnumerable()
                 .FirstOrDefault();

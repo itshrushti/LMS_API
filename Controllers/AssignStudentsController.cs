@@ -20,7 +20,6 @@ namespace LMS_Project_APIs.Controllers
         }
 
         [HttpPost("AssignStudents")]
-       
         public async Task<IActionResult> AssignStudents(TblAssignStudents tblassign)
         {
             //var TrainingId = _httpcontextAccessor.HttpContext.Session.GetInt32("TrainingId");
@@ -48,6 +47,19 @@ namespace LMS_Project_APIs.Controllers
             }
         }
 
+        //for display assign student in edit training
+        [HttpGet("GetStudentIds/{TrainingId}")]
+        public async Task<IActionResult> GetStudentIds(int TrainingId)
+        {
+            var studentIds = await _context.Database
+                .SqlQueryRaw<int>("EXEC GetAssignStudents @p0", TrainingId)
+                .ToListAsync();
+
+            if (!studentIds.Any())
+                return NotFound(new { message = "No assigned student found" });
+
+            return Ok(studentIds); // ✅ Returns JSON array `[1,2,3]`
+        }
 
     }
 }

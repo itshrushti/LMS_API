@@ -10,5 +10,7 @@
         public string? trainingtype_name { get; set; }
 
         public DateOnly? archive_date { get; set; }
+
+        public DateTime? create_date { get; set; }
     }
 }

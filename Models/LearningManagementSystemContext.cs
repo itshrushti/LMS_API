@@ -39,7 +39,7 @@ public partial class LearningManagementSystemContext : DbContext
 
     public virtual DbSet<TblTraining> TblTrainings { get; set; }
 
-    public virtual DbSet<DisplayTrainingbyId> DisplayTrainingbyId { get; set; }
+    public virtual DbSet<DisplayTrainingbyId> DisplayTrainingbyIds { get; set; }
 
     public virtual DbSet<TblTrainingType> TblTrainingTypes { get; set; }
 

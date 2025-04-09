@@ -12,16 +12,16 @@ namespace LMS_Project_APIs.Models
 
         public string? TrainingCode { get; set; }
 
-        //public int? Trainingtype_Id { get; set; } // Original FK field
+        public int? Trainingtype_Id { get; set; } // Original FK field
 
-        [NotMapped]
         public string? TrainingTypeName { get; set; } // ✅ Training type name (Fetched from `tbl_TrainingType`)
 
         // ✅ 1. Store the file name from DB
         //public string? DocumentFileName { get; set; } // This comes from the database
+        public string? DocumentFile { get; set; } // mapped to SQL result
 
         [NotMapped]
-        public IFormFile? DocumentFile { get; set; }
+        public IFormFile? DocumentFileUpload { get; set; } // used for upload only
 
         public string? ExternalLinkUrl { get; set; }
 
@@ -39,8 +39,11 @@ namespace LMS_Project_APIs.Models
 
         public DateTime? CendDate { get; set; }
 
+        public string? ThumbnailImage { get; set; } // mapped to SQL result
+
         [NotMapped]
-        public IFormFile? ThumbnailImage { get; set; }
+        public IFormFile? ThumbnailImageUpload { get; set; }
+
     }
 
 }
