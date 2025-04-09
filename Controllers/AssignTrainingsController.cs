@@ -56,7 +56,7 @@ namespace LMS_Project_APIs.Controllers
             if (!trainingIds.Any())
                 return NotFound(new { message = "No assigned trainings found" });
 
-            return Ok(trainingIds); // ✅ Returns JSON array `[1,2,3]`
+            return Ok(trainingIds); 
         }
 
 
