@@ -58,7 +58,7 @@ namespace LMS_Project_APIs.Controllers
             if (!studentIds.Any())
                 return NotFound(new { message = "No assigned student found" });
 
-            return Ok(studentIds); // ✅ Returns JSON array `[1,2,3]`
+            return Ok(studentIds); //  Returns JSON array `[1,2,3]`
         }
 
     }
