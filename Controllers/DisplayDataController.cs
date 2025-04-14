@@ -188,11 +188,15 @@ namespace LMS_Project_APIs.Controllers
         }
 
 
-        [HttpGet("GetTrainingDataByID/{trainingid}")]
-        public async Task<IActionResult> GetTrainingByID(int trainingid)
+        [HttpGet("GetTrainingDataByID/{trainingid}/{studentid}")]
+        public async Task<IActionResult> GetTrainingByID(int trainingid, int studentid)
         {
             var trainingidParam = new SqlParameter("@trainingid", trainingid);
-            var trainingdata = await _context.TrainingDataByIDs.FromSqlRaw("EXEC GetTrainingByID @trainingid", trainingidParam).ToListAsync();
+            var studentidParam = new SqlParameter("@studentid", studentid);
+
+            var trainingdata = await _context.TrainingDataByIDs
+                .FromSqlRaw("EXEC GetTrainingByID @trainingid, @studentid", trainingidParam, studentidParam)
+                .ToListAsync();
 
             return Ok(trainingdata);
         }
@@ -210,11 +214,12 @@ namespace LMS_Project_APIs.Controllers
              
             if (!System.IO.File.Exists(filePath))
             {
-                var defaultFile = string.IsNullOrEmpty(type)
-                ? "default_training.jpg" // for null or empty type
-                : type.ToLower() == "document"
-                ? "Doc_image.jpg"
-                : "EL_image.jpg";
+                var defaultFile = type?.ToLower() switch
+                {
+                    "document" => "Doc_image.jpg",
+                    "external link" => "EL_image.jpg",
+                    _ => "default_training.jpg"  
+                };
 
                 filePath = Path.Combine(defaultsPath, defaultFile);
 

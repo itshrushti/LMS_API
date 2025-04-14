@@ -12,6 +12,7 @@
         public string? training_hours { get; set; }
         public bool requires_approval { get; set; }
         public DateOnly archive_date { get; set; }
+        public string? status { get; set; }
         public string? summary { get; set; } 
         public string? thumbnail_image { get; set; } 
 
