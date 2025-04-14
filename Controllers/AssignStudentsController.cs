@@ -60,6 +60,34 @@ namespace LMS_Project_APIs.Controllers
 
             return Ok(studentIds); //  Returns JSON array `[1,2,3]`
         }
+         
+        //For display training name and status and student name
+        [HttpGet("getDisplayStatus")]
+        public IActionResult getDisplayStatus()
+        {
+            var displayStatuses = _context.TblDisplayStatuses
+                            .FromSqlRaw("EXEC display_Status")
+                            .AsEnumerable()
+                            .ToList();
+            return Ok(displayStatuses);
+        }
 
+        [HttpGet("searchDisplayStatus")]
+        public async Task<ActionResult> searchDisplayStatus(string SearchValue)
+        {
+            if (string.IsNullOrWhiteSpace(SearchValue))
+            {
+                return BadRequest("Search value cannot be empty!");
+            }
+
+            var results = await _context.TblDisplayStatuses
+                                        .FromSqlRaw("EXEC display_Status @p0", SearchValue)
+                                        .ToListAsync();
+            if (results == null || results.Count == 0)
+            {
+                return NotFound("No matching training records found.");
+            }
+            return Ok(results);
+        }
     }
 }
