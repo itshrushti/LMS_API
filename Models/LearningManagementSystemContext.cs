@@ -66,6 +66,8 @@ public partial class LearningManagementSystemContext : DbContext
 
     public virtual DbSet<TrainingDataByID> TrainingDataByIDs { get; set; }
 
+    public virtual DbSet<TblDisplayStatus> TblDisplayStatuses { get; set; }
+
     public virtual DbSet<EditProfileImage> EditProfileImage { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -114,6 +116,7 @@ public partial class LearningManagementSystemContext : DbContext
         modelBuilder.Entity<TrainingStartModel>().HasNoKey().ToView(null);
         modelBuilder.Entity<PendingApproval>().HasNoKey().ToView(null);
         modelBuilder.Entity<DisplayTrainingbyId>().HasNoKey().ToView(null);
+        modelBuilder.Entity<TblDisplayStatus>().HasNoKey().ToView(null);
 
         modelBuilder.Entity<tbl_Training>().HasKey(t => t.training_id);
 
