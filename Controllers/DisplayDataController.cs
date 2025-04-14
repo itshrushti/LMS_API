@@ -143,7 +143,7 @@ namespace LMS_Project_APIs.Controllers
                 var studentIdParam = new SqlParameter("@studentid", studentId);
 
                 var courseCatalog = await _context.DisplayIDPs
-                    .FromSqlRaw("EXEC display_InProgress_Trainings @studentid", studentIdParam)
+                    .FromSqlRaw("EXEC display_InProgress @studentid", studentIdParam)
                     .ToListAsync();
 
                 return Ok(courseCatalog);
