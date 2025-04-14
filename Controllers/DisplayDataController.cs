@@ -209,10 +209,12 @@ namespace LMS_Project_APIs.Controllers
                 : Path.Combine(uploadsPath, fileName);
              
             if (!System.IO.File.Exists(filePath))
-            { 
-                var defaultFile = type?.ToLower() == "document"
-                    ? "Doc_image.jpg"
-                    : "EL_image.jpg";
+            {
+                var defaultFile = string.IsNullOrEmpty(type)
+                ? "default_training.jpg" // for null or empty type
+                : type.ToLower() == "document"
+                ? "Doc_image.jpg"
+                : "EL_image.jpg";
 
                 filePath = Path.Combine(defaultsPath, defaultFile);
 
