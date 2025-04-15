@@ -11,6 +11,10 @@
 
         public DateOnly? archive_date { get; set; }
 
+        public string? summary {  get; set; }
+
+        public string? thumbnail_image {  get; set; }
+
         public DateTime? create_date { get; set; }
     }
 }

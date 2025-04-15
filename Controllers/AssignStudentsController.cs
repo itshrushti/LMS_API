@@ -60,7 +60,21 @@ namespace LMS_Project_APIs.Controllers
 
             return Ok(studentIds); //  Returns JSON array `[1,2,3]`
         }
-         
+
+        //for display status, student by training id in edit training
+        [HttpGet("GetStudentStatus/{trainingId}")]
+        public async Task<IActionResult> GetStudentStatus(int trainingId)
+        {
+            var status = await _context.TblDisplayStatuses
+                .FromSqlRaw("EXEC display_TrainingIdWise_StudentStatus @p0", trainingId)
+                .ToListAsync();
+
+            if (!status.Any())
+                return NotFound(new { message = "No assigned student found" });
+
+            return Ok(status); //  Returns JSON array `[1,2,3]`
+        }
+
         //For display training name and status and student name
         [HttpGet("getDisplayStatus")]
         public IActionResult getDisplayStatus()
