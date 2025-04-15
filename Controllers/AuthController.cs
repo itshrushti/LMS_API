@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
+using System.Net.Mail;
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -41,7 +43,7 @@ namespace LMS_Project_APIs.Controllers
 
             if (student.Archive_Date.HasValue && student.Archive_Date.Value < DateOnly.FromDateTime(DateTime.Now))
 
-                return Unauthorized(new { message = "Your Account is archived." , archive_date = student.Archive_Date });
+                return Unauthorized(new { message = "Your Account is archived.", archive_date = student.Archive_Date });
 
 
             //var httpContext = _httpContextAccessor.HttpContext;
@@ -49,6 +51,7 @@ namespace LMS_Project_APIs.Controllers
             HttpContext.Session.SetString("firstname", student.Firstname);
             HttpContext.Session.SetString("lastname", student.Lastname);
             HttpContext.Session.SetString("UserRole", student.Role_name);
+            HttpContext.Session.SetString("Email", student.Email);
             HttpContext.Session.SetString("LoginTime", DateTime.UtcNow.ToString());
 
 
@@ -59,6 +62,7 @@ namespace LMS_Project_APIs.Controllers
                 StudentId = student.Student_Id,
                 firstname = student.Firstname,
                 lastname = student.Lastname,
+                email=student.Email,
                 archivedate = student.Archive_Date
             });
         }
@@ -85,12 +89,12 @@ namespace LMS_Project_APIs.Controllers
             }
         }
 
-      
+
         [HttpPost("ResetPassword")]
         public async Task<IActionResult> ResetPassword(Models.ResetPassword request)
         {
 
-           
+
             if (request == null || string.IsNullOrEmpty(request.Current_Password) || string.IsNullOrEmpty(request.New_Password) || string.IsNullOrEmpty(request.Confirm_Password))
                 return BadRequest(new { message = "All fields are required." });
 
@@ -107,58 +111,9 @@ namespace LMS_Project_APIs.Controllers
         }
 
 
-        [HttpPost("CheckUserExists")]
-        public IActionResult CheckUserExists([FromBody] string emailOrUsername)
-        {
-            if (string.IsNullOrEmpty(emailOrUsername))
-            {
-                return BadRequest(new { message = "Username or Email is required." });
-            }
-
-            var students = _context.DisplayStudents
-                .FromSqlRaw("EXEC display_Student")
-                .AsEnumerable()
-                .ToList();
-
-            var userExists = students.Any(s => s.Username == emailOrUsername || s.Email == emailOrUsername);
-
-            if (!userExists)
-            {
-                return BadRequest(new { message = "User not found." });
-            }
-
-            return Ok(new { message = "User exists." });
-        }
-
-
-        [HttpPost("ForgetPassword")]
-        public async Task<IActionResult> ForgetPassword([FromBody] ForgetPassword model)
-        {
-            if (string.IsNullOrEmpty(model.UsernameAndEmail) ||
-                string.IsNullOrEmpty(model.New_Password) ||
-                string.IsNullOrEmpty(model.Confirm_Password))
-            {
-                return BadRequest(new { message = "All fields are required." });
-            }
-
-            if (model.New_Password != model.Confirm_Password)
-            {
-                return BadRequest(new { message = "New password and confirm password do not match." });
-            }
-
-            var result = await _context.Database.ExecuteSqlRawAsync(
-                "EXEC forgetPassword @p0, @p1, @p2",
-                new SqlParameter("@p0", model.UsernameAndEmail),
-                new SqlParameter("@p1", model.New_Password),
-                new SqlParameter("@p2", model.Confirm_Password)
-            );
-
-            return Ok(new { message = "Password has been reset successfully." });
-        }
-
-
 
         //only for testing
+
         [HttpGet("getstudentid")]
         public IActionResult GetStudentId()
         {
@@ -172,7 +127,123 @@ namespace LMS_Project_APIs.Controllers
             return Ok(new { student_id = studentId, Firstname = firstname, Lastname = lastname });
         }
 
-        
+        [HttpPost("RequestPasswordReset")]
+        public async Task<IActionResult> RequestPasswordReset([FromBody] ForgotPasswordRequest model)
+        {
+            if (string.IsNullOrWhiteSpace(model.Email))
+            {
+                return BadRequest();
+            }
+
+            var normalizedEmail = model.Email.Trim().ToLower();
+
+            var user = _context.DisplayStudents
+                .FromSqlRaw("EXEC display_Student")
+                .AsEnumerable()
+                .FirstOrDefault(s => s.Email?.Trim().ToLower() == normalizedEmail);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var resetLink = $"http://localhost:4200/ChangePassword?email={Uri.EscapeDataString(normalizedEmail)}";
+
+            // Call the async version
+            await SendResetPasswordEmail(user.Username, normalizedEmail, resetLink);
+
+            return NoContent();
+        }
+
+        private async Task SendResetPasswordEmail(string username, string receiverEmail, string resetLink)
+        {
+            try
+            {
+                string subject = "Reset Your Password - LMS App";
+                string body = $@"
+    Hello {username},
+
+    We have received a request to reset the password associated with your account on the Learning Management System (LMS).
+
+    To proceed with resetting your password, please click the secure link below:
+
+    {resetLink}
+
+    If you did not initiate this request, no further action is required, and you may safely disregard this message.
+
+    If you require any assistance, please do not hesitate to contact our support team.
+
+    Thank You,  
+    LMS Support Team
+";
+                var senderEmail = new MailAddress("shrukirti7377@gmail.com", "LMS System");
+                var receiver = new MailAddress(receiverEmail, username);
+                var password = "qbpeomyducbtrcaa"; // App-specific password
+
+                var smtp = new SmtpClient
+                {
+                    Host = "smtp.gmail.com",
+                    Port = 587,
+                    EnableSsl = true,
+                    DeliveryMethod = SmtpDeliveryMethod.Network,
+                    UseDefaultCredentials = false,
+                    Credentials = new NetworkCredential(senderEmail.Address, password)
+                };
+
+                using (var message = new MailMessage(senderEmail, receiver)
+                {
+                    Subject = subject,
+                    Body = body
+                })
+                {
+                    await smtp.SendMailAsync(message);
+                }
+            }
+            catch (Exception ex)
+            {
+                string logPath = @"C:\ErrorLogs\email_log.txt";
+                if (!Directory.Exists(Path.GetDirectoryName(logPath)))
+                    Directory.CreateDirectory(Path.GetDirectoryName(logPath));
+                await System.IO.File.AppendAllTextAsync(logPath, $"{DateTime.Now}: {ex.ToString()}\n");
+            }
+        }
+    
+
+     [HttpPost("ForgetPassword")]
+        public async Task<IActionResult> ResetPassword([FromBody] ForgetPassword model)
+        {
+            if (string.IsNullOrEmpty(model.Email) ||
+                string.IsNullOrEmpty(model.New_Password) ||
+                string.IsNullOrEmpty(model.Confirm_Password))
+            {
+                return BadRequest(new { message = "All fields are required." });
+            }
+
+            if (model.New_Password != model.Confirm_Password)
+            {
+                return BadRequest(new { message = "Passwords do not match." });
+            }
+
+            var user = _context.DisplayStudents
+                .FromSqlRaw("EXEC display_Student")
+                .AsEnumerable()
+                .FirstOrDefault(s => s.Email == model.Email);
+
+            if (user == null)
+            {
+                return BadRequest(new { message = "Invalid email." });
+            }
+
+            // Update password via your stored proc
+            var result = await _context.Database.ExecuteSqlRawAsync(
+                "EXEC forgetPassword @p0, @p1, @p2",
+                new SqlParameter("@p0", model.Email),
+                new SqlParameter("@p1", model.New_Password),
+                new SqlParameter("@p2", model.Confirm_Password)
+            );
+
+            return Ok(new { message = "Password has been reset successfully." });
+        }
     }
-}
+    }
 
