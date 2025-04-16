@@ -240,15 +240,12 @@ namespace LMS_Project_APIs.Controllers
 <body>
     <div class='container'>
         <h2>Hello {firstname} {lastname},</h2>
-
         <p>🎉 <strong>Congratulations!</strong> You've successfully completed the training: <span class='highlight'>{training.training_name}</span></p>
-
         <p>This training covered essential topics to help you enhance your skills and grow professionally.</p>
         <p>We encourage you to explore more trainings to continue your learning journey.</p>
         <p>Keep up the amazing work!</p>
         <p>Best regards,</p>
         <p><strong>LMS Team</strong></p>
-
         <div class='footer'>
             This is an automated message from the LMS System. Please do not reply.
         </div>
