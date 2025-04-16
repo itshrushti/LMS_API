@@ -150,18 +150,18 @@ namespace LMS_Project_APIs.Controllers
             var resetLink = $"http://localhost:4200/ChangePassword?email={Uri.EscapeDataString(normalizedEmail)}";
 
             // Call the async version
-            await SendResetPasswordEmail(user.Username, normalizedEmail, resetLink);
+            await SendResetPasswordEmail(user.Firstname, user.Lastname, normalizedEmail, resetLink);
 
             return NoContent();
         }
 
-        private async Task SendResetPasswordEmail(string username, string receiverEmail, string resetLink)
+        private async Task SendResetPasswordEmail(string firstname, string lastname, string receiverEmail, string resetLink)
         {
             try
             {
                 string subject = "Reset Your Password - LMS App";
                 string body = $@"
-    Hello {username},
+    Hello {firstname} {lastname},
 
     We have received a request to reset the password associated with your account on the Learning Management System (LMS).
 
@@ -169,15 +169,13 @@ namespace LMS_Project_APIs.Controllers
 
     {resetLink}
 
-    If you did not initiate this request, no further action is required, and you may safely disregard this message.
-
     If you require any assistance, please do not hesitate to contact our support team.
 
     Thank You,  
     LMS Support Team
 ";
                 var senderEmail = new MailAddress("shrukirti7377@gmail.com", "LMS System");
-                var receiver = new MailAddress(receiverEmail, username);
+                var receiver = new MailAddress(receiverEmail, firstname);
                 var password = "qbpeomyducbtrcaa"; // App-specific password
 
                 var smtp = new SmtpClient
