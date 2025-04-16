@@ -166,6 +166,14 @@ namespace LMS_Project_APIs.Controllers
             {
                 return BadRequest(new { Message = "Student not found in tbl_Student." });
             }
+            var emailCheckResult = await _context.TblStudents
+       .FromSqlRaw("SELECT * FROM tbl_Student WHERE Email = @p0 AND Student_Id != @p1", stud.Email, stud.Student_Id)
+       .AnyAsync();
+
+            if (emailCheckResult)
+            {
+                return BadRequest(new { Message = "This email is already registered with another student." });
+            }
 
             try
             {
